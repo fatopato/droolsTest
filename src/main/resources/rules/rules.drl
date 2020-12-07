@@ -38,77 +38,106 @@ import java.util.List;
 //    end
 
 
-//%20 indirim kampanyası
-rule "Discount by percentage"
-	when
-		orderObject: Order()
-	then
-		orderObject.getPayment().getDiscount().setType("percent");
-		orderObject.getPayment().getDiscount().setAmount(20.0);
-		// TODO: formul
-		orderObject.getPayment().setFinalAmount(orderObject.getPayment().getTotalAmount() * 0.8);
-	end
+////%20 indirim kampanyası
+//rule "Discount by percentage"
+//	when
+//		orderObject: Order()
+//	then
+//		orderObject.getPayment().getDiscount().setType("percent");
+//		orderObject.getPayment().getDiscount().setAmount(20.0);
+//		// TODO: formul
+//		orderObject.getPayment().setFinalAmount(orderObject.getPayment().getTotalAmount() * 0.8);
+//	end
+//
+//
+////30TL indirim kampanyası
+//rule "Discount by amount"
+//	when
+//		orderObject: Order()
+//	then
+//		orderObject.getPayment().getDiscount().setType("cash");
+//		orderObject.getPayment().getDiscount().setAmount(30.0);
+//		orderObject.getPayment().setFinalAmount(orderObject.getPayment().getTotalAmount() - 30.0);
+//	end
+//
+//
+//
+////Seçili üründe %10 indirim kampanyası
+//rule "Percent discount for selected products"
+//    when
+//        orderObject: Order()
+//        $eligbleProducts : ArrayList()
+//        $product : Product(name == orderObject.product.name) from $eligbleProducts
+//        $eligbleCampaigns: ArrayList()
+//    then
+//		orderObject.getPayment().getDiscount().setType("percent");
+//		orderObject.getPayment().getDiscount().setAmount();
+//        System.out.println(orderObject.toString());
+//    end
+//
+//
+////Seçili üründe 50TL indirim kampanyası
+//rule "Percent discount for selected products"
+//    when
+//        orderObject: Order()
+//        $eligbleProducts : ArrayList()
+//        $product : Product(name == orderObject.product.name) from $eligbleProducts
+//        eligbleCampaigns: ArrayList()
+//        $discount: Discount()
+//    then
+//		orderObject.getPayment().setDiscount(eligbleCampaigns(2L).getDiscount());
+//		orderObject.getPayment().getDiscount().setAmount(50.0);
+//        System.out.println(orderObject.toString());
+//    end
+//
+//
+//rule "Iterate the orders for payment check"
+//    when
+//        orderObject: Order(payment.type == "credit")
+//        $productList : ArrayList()
+//        $product : Product(name == orderObject.product.name) from $productList
+//    then
+//        orderObject.getProduct().setDiscount(180);
+//        System.out.println(orderObject.toString());
+//    end
+//
+//rule "Iterate the orders"
+//    when
+//        orderObject: Order(payment.type == "cash")
+//        $productList : ArrayList()
+//        $product : Product(name == orderObject.product.name) from $productList
+//    then
+//        orderObject.getProduct().setDiscount(80);
+//        System.out.println(orderObject.toString());
+//    end
 
-
-//30TL indirim kampanyası
-rule "Discount by amount"
-	when
-		orderObject: Order()
-	then
-		orderObject.getPayment().getDiscount().setType("cash");
-		orderObject.getPayment().getDiscount().setAmount(30.0);
-		orderObject.getPayment().setFinalAmount(orderObject.getPayment().getTotalAmount() - 30.0);
-	end
-
-
-
-//Seçili üründe %10 indirim kampanyası
-rule "Percent discount fo selected products"
+// İndirim tipi yüzde olan kampanyalar
+rule "Campaign Test - Percent"
     when
-        orderObject: Order()
+        orderObject : Order()
         $eligbleProducts : ArrayList()
         $product : Product(name == orderObject.product.name) from $eligbleProducts
-        $eligbleCampaigns: ArrayList()
+        $eligbleCampaigns : ArrayList()
+        $campaign : Campaign(benefit.discount.type == "percent") from $eligbleCampaigns
     then
-		orderObject.getPayment().getDiscount().setType("percent");
-		orderObject.getPayment().getDiscount().setAmount();
-        System.out.println(orderObject.toString());
+        orderObject.getSimulatedPaymentOptions().add(new Payment(orderObject.getPaymentType(), $campaign.getBenefit().getDiscount(), orderObject.getProduct().getPrice(), orderObject.getProduct().getPrice()*(1-($campaign.getBenefit().getDiscount().getAmount())/100)));
+        System.out.println(orderObject);
     end
 
-
-//Seçili üründe 50TL indirim kampanyası
-rule "Percent discount fo selected products"
+// İndirim tipi nakit olan kampanyalar
+rule "Campaign Test - Cash"
     when
-        orderObject: Order()
+        orderObject : Order()
         $eligbleProducts : ArrayList()
         $product : Product(name == orderObject.product.name) from $eligbleProducts
-        eligbleCampaigns: ArrayList()
-        $discount: Discount()
+        $eligbleCampaigns : ArrayList()
+        $campaign : Campaign(benefit.discount.type == "cash") from $eligbleCampaigns
     then
-		orderObject.getPayment().setDiscount(eligbleCampaigns(2L).getDiscount());
-		orderObject.getPayment().getDiscount().setAmount(50.0);
-        System.out.println(orderObject.toString());
-    end
-
-
-rule "Iterate the orders for payment check"
-    when
-        orderObject: Order(payment.type == "credit")
-        $productList : ArrayList()
-        $product : Product(name == orderObject.product.name) from $productList
-    then
-        orderObject.getProduct().setDiscount(180);
-        System.out.println(orderObject.toString());
-    end
-
-rule "Iterate the orders"
-    when
-        orderObject: Order(payment.type == "cash")
-        $productList : ArrayList()
-        $product : Product(name == orderObject.product.name) from $productList
-    then
-        orderObject.getProduct().setDiscount(80);
-        System.out.println(orderObject.toString());
+        orderObject.getSimulatedPaymentOptions().add(new Payment(orderObject.getPaymentType(),
+                                                    $campaign.getBenefit().getDiscount(),
+                                                    orderObject.getProduct().getPrice(),
+                                                    orderObject.getProduct().getPrice()-($campaign.getBenefit().getDiscount().getAmount())));
+        System.out.println(orderObject);
     end
 
 

@@ -6,8 +6,9 @@ public class Order {
 
     private Product product;
     // TODO: Simulated payment list
-    private ArrayList<Payment> simulatedPaymentOptions;
+    private ArrayList<Payment> simulatedPaymentOptions = new ArrayList<Payment>();
     private Payment payment;
+    private String paymentType;
 
     public Order() {
     }
@@ -21,6 +22,31 @@ public class Order {
         this.product = product;
         this.simulatedPaymentOptions = simulatedPaymentOptions;
         this.payment = payment;
+    }
+
+    public Order(Product product, ArrayList<Payment> simulatedPaymentOptions, Payment payment, String paymentType) {
+        this.product = product;
+        this.simulatedPaymentOptions = simulatedPaymentOptions;
+        this.payment = payment;
+        this.paymentType = paymentType;
+    }
+
+    @Override
+    public String toString() {
+        return "Order{" +
+                "product=" + product +
+                ", simulatedPaymentOptions=" + simulatedPaymentOptions +
+                ", payment=" + payment +
+                ", paymentType='" + paymentType + '\'' +
+                '}';
+    }
+
+    public String getPaymentType() {
+        return paymentType;
+    }
+
+    public void setPaymentType(String paymentType) {
+        this.paymentType = paymentType;
     }
 
     public ArrayList<Payment> getSimulatedPaymentOptions() {
@@ -47,12 +73,4 @@ public class Order {
         this.payment = payment;
     }
 
-    @Override
-    public String toString() {
-        return "Order{" +
-                "product=" + product +
-                ", simulatedPaymentOptions=" + simulatedPaymentOptions +
-                ", payment=" + payment +
-                '}';
-    }
 }

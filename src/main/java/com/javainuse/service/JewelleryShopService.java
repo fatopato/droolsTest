@@ -55,8 +55,8 @@ public class JewelleryShopService {
 		this.eligibleCampaigns.add(new Campaign(7L, "Kredi kartı ödemelerinde % 25 indirim kampanyası", "single", new Benefit(7L, "discount by percentage",  new Discount("percent", 25.0))));
 		this.eligibleCampaigns.add(new Campaign(8L,  "Nakit ödemelerde 36TL indirim kampanyası", "single", new Benefit(8L, "discount by cash",  new Discount("cash", 36.0))));
 
-		this.eligibleCampaigns.add(new Campaign(9L, "Seçili ürünlerde 40 puan indirim kampanyası", "single", new Benefit(7L, "discount by point",  new Discount("point", 40.0))));
-		this.eligibleCampaigns.add(new Campaign(10L,  "Seçili ürün kategorilerinde 50 puan indirim kampanyası", "single", new Benefit(8L, "discount by point",  new Discount("point", 50.0))));
+		this.eligibleCampaigns.add(new Campaign(9L, "Seçili ürünlerde 40 puan indirim kampanyası", "single", new Benefit(9L, "discount by point",  new Discount("point", 40.0))));
+		this.eligibleCampaigns.add(new Campaign(10L,  "Seçili ürün kategorilerinde 50 puan indirim kampanyası", "single", new Benefit(10L, "discount by point",  new Discount("point", 50.0))));
 
 
 	}
