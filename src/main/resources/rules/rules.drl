@@ -108,5 +108,70 @@ rule "Discount by cash on cash payment"
         System.out.println("Campaign: " + $campaign.getName() + "...Discount: " + $campaign.getBenefit().getDiscount());
     end
 
+// Seçili ürün kategorilerinde %x indirim kampanyası
+rule "Discount by percentage on certain product categories"
+    when
+        orderObject : Order()
+        $eligbleCategories : ArrayList()
+        $category : ProductCategory(type == orderObject.product.category.type) from $eligbleCategories
+        $eligbleCampaigns : ArrayList()
+        // $campaign : Campaign(benefit.discount.type == "percent") from $eligbleCampaigns
+        $campaign : Campaign(name == "Seçili ürün kategorilerinde %x indirim kampanyası") from $eligbleCampaigns
+    then
+        orderObject.getSimulatedPaymentOptions().add(new Payment(orderObject.getPaymentType(), $campaign.getBenefit().getDiscount(), orderObject.getProduct().getPrice(), orderObject.getProduct().getPrice()*(1-($campaign.getBenefit().getDiscount().getAmount())/100)));
+        System.out.println("Campaign: " + $campaign.getName() + "...Discount: " + $campaign.getBenefit().getDiscount());
+    end
 
+// Seçili ürün kategorilerinde xTL indirim kampanyası
+rule "Discount by cash on certain product categories"
+    when
+        orderObject : Order()
+        $eligbleCategories : ArrayList()
+        $category : ProductCategory(type == orderObject.product.category.type) from $eligbleCategories
+        $eligbleCampaigns : ArrayList()
+        //$campaign : Campaign(benefit.discount.type == "cash") from $eligbleCampaigns
+        $campaign : Campaign(name == "Seçili ürün kategorilerinde xTL indirim kampanyası") from $eligbleCampaigns
+    then
+        orderObject.getSimulatedPaymentOptions().add(new Payment(orderObject.getPaymentType(),
+                                                    $campaign.getBenefit().getDiscount(),
+                                                    orderObject.getProduct().getPrice(),
+                                                    orderObject.getProduct().getPrice()-($campaign.getBenefit().getDiscount().getAmount())));
+        System.out.println("Campaign: " + $campaign.getName() + "...Discount: " + $campaign.getBenefit().getDiscount());
+    end
+
+
+// TODO: Kontrol et
+// Seçili ürünlerde x puan indirim kampanyası
+rule "Discount by point on certain products"
+    when
+        orderObject : Order()
+        $eligbleProducts : ArrayList()
+        $product : Product(name == orderObject.product.name) from $eligbleProducts
+        $eligbleCampaigns : ArrayList()
+        //$campaign : Campaign(benefit.discount.type == "cash") from $eligbleCampaigns
+        $campaign : Campaign(name == "Seçili ürünlerde x puan indirim kampanyası") from $eligbleCampaigns
+    then
+        orderObject.getSimulatedPaymentOptions().add(new Payment(orderObject.getPaymentType(),
+                                                    $campaign.getBenefit().getDiscount(),
+                                                    orderObject.getProduct().getPrice(),
+                                                    orderObject.getProduct().getPrice()));
+        System.out.println("Campaign: " + $campaign.getName() + "...Discount: " + $campaign.getBenefit().getDiscount());
+    end
+
+// Seçili ürün kategorilerinde x puan indirim kampanyası
+rule "Discount by point on certain product categories"
+    when
+        orderObject : Order()
+        $eligbleCategories : ArrayList()
+        $category : ProductCategory(type == orderObject.product.category.type) from $eligbleCategories
+        $eligbleCampaigns : ArrayList()
+        //$campaign : Campaign(benefit.discount.type == "cash") from $eligbleCampaigns
+        $campaign : Campaign(name == "Seçili ürün kategorilerinde x puan indirim kampanyası") from $eligbleCampaigns
+    then
+        orderObject.getSimulatedPaymentOptions().add(new Payment(orderObject.getPaymentType(),
+                                                    $campaign.getBenefit().getDiscount(),
+                                                    orderObject.getProduct().getPrice(),
+                                                    orderObject.getProduct().getPrice()));
+        System.out.println("Campaign: " + $campaign.getName() + "...Discount: " + $campaign.getBenefit().getDiscount());
+    end
 

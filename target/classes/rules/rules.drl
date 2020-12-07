@@ -13,30 +13,6 @@ import com.javainuse.model.Campaign;
 import com.javainuse.service.JewelleryShopService;
 import java.util.ArrayList;
 import java.util.List;
-//
-//rule "Offer for Diamond"
-//	when
-//		productObject: Product(type=="diamond")
-//	then
-//		productObject.setDiscount(15);
-//	end
-//rule "Offer for Gold"
-//	when
-//		productObject: Product(type=="gold")
-//	then
-//		productObject.setDiscount(25);
-//	end
-//
-//rule "Iterate the products"
-//    when
-//        productObject: Product()
-//        $productList : ArrayList()
-//        $product : Product(name == productObject.name) from $productList
-//    then
-//        productObject.setDiscount(80);
-//        System.out.println(productObject.toString());
-//    end
-
 
 //%x indirim kampanyası
 rule "Discount by percentage"
@@ -72,57 +48,6 @@ rule "Discount by amount"
         );
         System.out.println("Campaign: " + $campaign.getName() + "...Discount: " + $campaign.getBenefit().getDiscount());;
 	end
-
-
-
-////Seçili üründe %10 indirim kampanyası
-//rule "Percent discount for selected products"
-//    when
-//        orderObject: Order()
-//        $eligbleProducts : ArrayList()
-//        $product : Product(name == orderObject.product.name) from $eligbleProducts
-//        $eligbleCampaigns: ArrayList()
-//    then
-//		orderObject.getPayment().getDiscount().setType("percent");
-//		orderObject.getPayment().getDiscount().setAmount();
-//        System.out.println(orderObject.toString());
-//    end
-//
-//
-////Seçili üründe 50TL indirim kampanyası
-//rule "Percent discount for selected products"
-//    when
-//        orderObject: Order()
-//        $eligbleProducts : ArrayList()
-//        $product : Product(name == orderObject.product.name) from $eligbleProducts
-//        eligbleCampaigns: ArrayList()
-//        $discount: Discount()
-//    then
-//		orderObject.getPayment().setDiscount(eligbleCampaigns(2L).getDiscount());
-//		orderObject.getPayment().getDiscount().setAmount(50.0);
-//        System.out.println(orderObject.toString());
-//    end
-//
-//
-//rule "Iterate the orders for payment check"
-//    when
-//        orderObject: Order(payment.type == "credit")
-//        $productList : ArrayList()
-//        $product : Product(name == orderObject.product.name) from $productList
-//    then
-//        orderObject.getProduct().setDiscount(180);
-//        System.out.println(orderObject.toString());
-//    end
-//
-//rule "Iterate the orders"
-//    when
-//        orderObject: Order(payment.type == "cash")
-//        $productList : ArrayList()
-//        $product : Product(name == orderObject.product.name) from $productList
-//    then
-//        orderObject.getProduct().setDiscount(80);
-//        System.out.println(orderObject.toString());
-//    end
 
 // Seçili üründe %x indirim kampanyası
 rule "Discount by percentage on certain products"
@@ -183,5 +108,70 @@ rule "Discount by cash on cash payment"
         System.out.println("Campaign: " + $campaign.getName() + "...Discount: " + $campaign.getBenefit().getDiscount());
     end
 
+// Seçili ürün kategorilerinde %x indirim kampanyası
+rule "Discount by percentage on certain product categories"
+    when
+        orderObject : Order()
+        $eligbleCategories : ArrayList()
+        $category : ProductCategory(type == orderObject.product.category.type) from $eligbleCategories
+        $eligbleCampaigns : ArrayList()
+        // $campaign : Campaign(benefit.discount.type == "percent") from $eligbleCampaigns
+        $campaign : Campaign(name == "Seçili ürün kategorilerinde %x indirim kampanyası") from $eligbleCampaigns
+    then
+        orderObject.getSimulatedPaymentOptions().add(new Payment(orderObject.getPaymentType(), $campaign.getBenefit().getDiscount(), orderObject.getProduct().getPrice(), orderObject.getProduct().getPrice()*(1-($campaign.getBenefit().getDiscount().getAmount())/100)));
+        System.out.println("Campaign: " + $campaign.getName() + "...Discount: " + $campaign.getBenefit().getDiscount());
+    end
 
+// Seçili ürün kategorilerinde xTL indirim kampanyası
+rule "Discount by cash on certain product categories"
+    when
+        orderObject : Order()
+        $eligbleCategories : ArrayList()
+        $category : ProductCategory(type == orderObject.product.category.type) from $eligbleCategories
+        $eligbleCampaigns : ArrayList()
+        //$campaign : Campaign(benefit.discount.type == "cash") from $eligbleCampaigns
+        $campaign : Campaign(name == "Seçili ürün kategorilerinde xTL indirim kampanyası") from $eligbleCampaigns
+    then
+        orderObject.getSimulatedPaymentOptions().add(new Payment(orderObject.getPaymentType(),
+                                                    $campaign.getBenefit().getDiscount(),
+                                                    orderObject.getProduct().getPrice(),
+                                                    orderObject.getProduct().getPrice()-($campaign.getBenefit().getDiscount().getAmount())));
+        System.out.println("Campaign: " + $campaign.getName() + "...Discount: " + $campaign.getBenefit().getDiscount());
+    end
+
+
+// TODO: Kontrol et
+// Seçili ürünlerde x puan indirim kampanyası
+rule "Discount by point on certain products"
+    when
+        orderObject : Order()
+        $eligbleProducts : ArrayList()
+        $product : Product(name == orderObject.product.name) from $eligbleProducts
+        $eligbleCampaigns : ArrayList()
+        //$campaign : Campaign(benefit.discount.type == "cash") from $eligbleCampaigns
+        $campaign : Campaign(name == "Seçili ürünlerde x puan indirim kampanyası") from $eligbleCampaigns
+    then
+        orderObject.getSimulatedPaymentOptions().add(new Payment(orderObject.getPaymentType(),
+                                                    $campaign.getBenefit().getDiscount(),
+                                                    orderObject.getProduct().getPrice(),
+                                                    orderObject.getProduct().getPrice()));
+        System.out.println("Campaign: " + $campaign.getName() + "...Discount: " + $campaign.getBenefit().getDiscount());
+    end
+
+// Seçili ürün kategorilerinde x puan indirim kampanyası
+rule "Discount by point on certain product categories"
+    when
+        orderObject : Order()
+        $eligbleCategories : ArrayList()
+        $category : ProductCategory(type == orderObject.product.category.type) from $eligbleCategories
+        $eligbleCampaigns : ArrayList()
+        //$campaign : Campaign(benefit.discount.type == "cash") from $eligbleCampaigns
+        $campaign : Campaign(name == "Seçili ürün kategorilerinde x puan indirim kampanyası") from $eligbleCampaigns
+    then
+        orderObject.getSimulatedPaymentOptions().add(new Payment(orderObject.getPaymentType(),
+                                                    $campaign.getBenefit().getDiscount(),
+                                                    orderObject.getProduct().getPrice(),
+                                                    orderObject.getProduct().getPrice()));
+        System.out.println("Campaign: " + $campaign.getName() + "...Discount: " + $campaign.getBenefit().getDiscount());
+    end
 
