@@ -21,7 +21,7 @@ public class JewelleryShopController {
 	public Order getQuestions(@RequestBody Order order) {
 
 		jewelleryShopService.getProductDiscount(order);
-
+		System.out.println("-----------------------------------------------------");
 		return order;
 	}
 

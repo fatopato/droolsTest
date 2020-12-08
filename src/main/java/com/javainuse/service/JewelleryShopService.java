@@ -59,6 +59,12 @@ public class JewelleryShopService {
 		this.eligibleCampaigns.add(new Campaign(9L, "Seçili ürünlerde x puan indirim kampanyası", "single", new Benefit(9L, "discount by point",  new Discount("point", 40.0))));
 		this.eligibleCampaigns.add(new Campaign(10L,  "Seçili ürün kategorilerinde x puan indirim kampanyası", "single", new Benefit(10L, "discount by point",  new Discount("point", 50.0))));
 
+		this.eligibleCampaigns.add(new Campaign(11L,  "xTL üzeri alışverişe özel ytl puan kampanyası", "single", new Benefit(11L, "discount by point",  new Discount("point", 50.0)), 123.0));
+		this.eligibleCampaigns.add(new Campaign(11L,  "xTL üzeri alışverişe özel ytl indirim kampanyası", "single", new Benefit(11L, "discount by cash",  new Discount("cash", 125.0)), 250.0));
+		this.eligibleCampaigns.add(new Campaign(12L,  "xTL üzeri alışverişe özel %y puan kampanyası", "single", new Benefit(11L, "discount by point",  new Discount("point", 22.0)), 50.0));
+
+		this.eligibleCampaigns.add(new Campaign(11L,  "xTL üzeri kredi kartı ödemelerine özel yTL indirim kampanyası", "single", new Benefit(12L, "discount by cash",  new Discount("cash", 127.0)), 350.0));
+		this.eligibleCampaigns.add(new Campaign(11L,  "xTL nakit ödemelere özel %y indirim kampanyası", "single", new Benefit(13L, "discount by percent",  new Discount("percent", 19.0)), 275.0));
 
 	}
 
@@ -79,5 +85,9 @@ public class JewelleryShopService {
 
 	public List<Product> getEligibleProducts(){
 		return this.eligibleProducts;
+	}
+
+	public Double calculate(){
+		return 0.0;
 	}
 }

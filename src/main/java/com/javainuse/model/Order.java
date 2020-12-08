@@ -7,12 +7,12 @@ public class Order {
     private ArrayList<OrderItem>  orderItems = new ArrayList<OrderItem>();
     // TODO: Simulated payment list
     private ArrayList<OrderItem> simulatedPaymentOptions = new ArrayList<OrderItem>();
-    private String paymentType;
+    private Payment paymentType;
 
     public Order() {
     }
 
-    public Order(ArrayList<OrderItem> orderItems, ArrayList<OrderItem> simulatedPaymentOptions, String paymentType) {
+    public Order(ArrayList<OrderItem> orderItems, ArrayList<OrderItem> simulatedPaymentOptions, Payment paymentType) {
         this.orderItems = orderItems;
         this.simulatedPaymentOptions = simulatedPaymentOptions;
         this.paymentType = paymentType;
@@ -43,11 +43,11 @@ public class Order {
         this.simulatedPaymentOptions = simulatedPaymentOptions;
     }
 
-    public String getPaymentType() {
+    public Payment getPaymentType() {
         return paymentType;
     }
 
-    public void setPaymentType(String paymentType) {
+    public void setPaymentType(Payment paymentType) {
         this.paymentType = paymentType;
     }
 }

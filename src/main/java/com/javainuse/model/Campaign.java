@@ -5,6 +5,7 @@ public class Campaign {
     private String name;
     private String type;
     private Benefit benefit;
+    private Double limit;
 
     public Campaign() {
     }
@@ -16,6 +17,14 @@ public class Campaign {
         this.benefit = benefit;
     }
 
+    public Campaign(Long id, String name, String type, Benefit benefit, Double limit) {
+        this.id = id;
+        this.name = name;
+        this.type = type;
+        this.benefit = benefit;
+        this.limit = limit;
+    }
+
     @Override
     public String toString() {
         return "Campaign{" +
@@ -23,7 +32,16 @@ public class Campaign {
                 ", name='" + name + '\'' +
                 ", type='" + type + '\'' +
                 ", benefit=" + benefit +
+                ", limit=" + limit +
                 '}';
+    }
+
+    public Double getLimit() {
+        return limit;
+    }
+
+    public void setLimit(Double limit) {
+        this.limit = limit;
     }
 
     public Benefit getBenefit() {
