@@ -2,14 +2,14 @@ package com.javainuse.model;
 
 import java.util.Objects;
 
-public class ProductCategory {
+public class ProductGroup {
     private Long id;
     private String type;
 
-    public ProductCategory() {
+    public ProductGroup() {
     }
 
-    public ProductCategory(Long id, String type) {
+    public ProductGroup(Long id, String type) {
         this.id = id;
         this.type = type;
     }
@@ -32,7 +32,7 @@ public class ProductCategory {
 
     @Override
     public String toString() {
-        return "ProductCategory{" +
+        return "ProductGroup{" +
                 "id=" + id +
                 ", type='" + type + '\'' +
                 '}';
@@ -42,8 +42,8 @@ public class ProductCategory {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ProductCategory category = (ProductCategory) o;
-        return Objects.equals(type, category.type);
+        ProductGroup that = (ProductGroup) o;
+        return Objects.equals(type, that.type);
     }
 
     @Override
