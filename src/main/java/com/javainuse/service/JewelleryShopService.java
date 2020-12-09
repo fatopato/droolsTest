@@ -100,6 +100,7 @@ public class JewelleryShopService {
 		generateCategories();
 		generateGroups();
 		generateProducts();
+		test();
 	}
 
 	public List<Product> getEligibleProducts(){
@@ -113,5 +114,11 @@ public class JewelleryShopService {
 	private ArrayList getAsList(Object... objects){
 		ArrayList<Object> list = new ArrayList<>(Arrays.asList(objects));
 		return list;
+	}
+
+	public void test() {
+		Order orderObject = new Order();
+		Long availableItemSize = orderObject.getOrderItems().stream().filter(orderItem -> this.eligibleGroups.stream().anyMatch(t -> orderItem.getProduct().getGroups().stream().map(ProductGroup::getType).anyMatch(x -> x.equals(((ProductGroup)t).getType())))).count();
+		System.out.println(availableItemSize);
 	}
 }

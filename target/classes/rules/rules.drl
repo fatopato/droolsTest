@@ -129,19 +129,12 @@ rule "Discount by cash on certain products"
         orderObject : Order()
         $eligbleProducts : ArrayList()
         $orderItem : OrderItem() from orderObject.orderItems
-        $product : Product(name == $orderItem.product.name) from $eligbleProducts
         $eligbleCampaigns : ArrayList()
         $campaign : Campaign(name == "Seçili üründe xTL indirim kampanyası") from $eligbleCampaigns
-    then
-
-        List<OrderItem> collection = new ArrayList<>();
-        for (OrderItem item : orderObject.getOrderItems()){
-            for (Object product : $eligbleProducts){
-                Product currentProduct  = (Product) product;
-                if (item.getProduct().getName().equals(currentProduct.getName())) collection.add(item);
-            }
-        }
-        int availableItemSize = collection.size();
+        $products: ArrayList() from  collect (Product(name == $orderItem.product.name) from $eligbleProducts)
+        $product : Product() from $products
+	then
+        int availableItemSize = $products.size();
         Double itemPrice = $orderItem.getProduct().getPrice();
         Double itemDiscount = $campaign.getBenefit().getDiscount().getAmount() / availableItemSize;
 
@@ -276,19 +269,12 @@ rule "Discount by cash on certain product categories"
         orderObject : Order()
         $eligbleCategories : ArrayList()
         $category : ProductCategory() from $eligbleCategories
-        $orderItem : OrderItem($product: product.categories contains $category) from orderObject.orderItems
         $eligbleCampaigns : ArrayList()
         $campaign : Campaign(name == "Seçili ürün kategorilerinde xTL indirim kampanyası") from $eligbleCampaigns
-    then
-
-        List<OrderItem> collection = new ArrayList<>();
-        for (OrderItem item : orderObject.getOrderItems()){
-            for (Object category : $eligbleCategories){
-                ProductCategory currentCategory = (ProductCategory) category;
-                if (item.getProduct().getCategories().contains(currentCategory)) collection.add(item);
-            }
-        }
-        int availableItemSize = collection.size();
+        $ordeItems: ArrayList() from  collect (OrderItem($product: product.categories contains $category) from orderObject.orderItems)
+        $orderItem: OrderItem() from $ordeItems
+	then
+        int availableItemSize = $ordeItems.size();
 
         Double itemPrice = $orderItem.getProduct().getPrice();
         Double itemDiscount = $campaign.getBenefit().getDiscount().getAmount() / availableItemSize;
@@ -321,19 +307,12 @@ rule "Discount by point on certain products"
         orderObject : Order()
         $eligbleProducts : ArrayList()
         $orderItem : OrderItem() from orderObject.orderItems
-        $product : Product(name == $orderItem.product.name) from $eligbleProducts
         $eligbleCampaigns : ArrayList()
         $campaign : Campaign(name == "Seçili ürünlerde x puan indirim kampanyası") from $eligbleCampaigns
-    then
-
-        List<OrderItem> collection = new ArrayList<>();
-        for (OrderItem item : orderObject.getOrderItems()){
-            for (Object product : $eligbleProducts){
-                Product currentProduct  = (Product) product;
-                if (item.getProduct().getName().equals(currentProduct.getName())) collection.add(item);
-            }
-        }
-        int availableItemSize = collection.size();
+        $products: ArrayList() from  collect (Product(name == $orderItem.product.name) from $eligbleProducts)
+        $product : Product() from $products
+	then
+        int availableItemSize = $products.size();
         Double itemPrice = $orderItem.getProduct().getPrice();
         Double itemDiscount = $campaign.getBenefit().getDiscount().getAmount() / availableItemSize;
 
@@ -364,19 +343,12 @@ rule "Discount by point on certain product categories"
         orderObject : Order()
         $eligbleCategories : ArrayList()
         $category : ProductCategory() from $eligbleCategories
-        $orderItem : OrderItem($product: product.categories contains $category) from orderObject.orderItems
         $eligbleCampaigns : ArrayList()
         $campaign : Campaign(name == "Seçili ürün kategorilerinde x puan indirim kampanyası") from $eligbleCampaigns
-    then
-
-        List<OrderItem> collection = new ArrayList<>();
-        for (OrderItem item : orderObject.getOrderItems()){
-            for (Object category : $eligbleCategories){
-                ProductCategory currentCategory = (ProductCategory) category;
-                if (item.getProduct().getCategories().contains(currentCategory)) collection.add(item);
-            }
-        }
-        int availableItemSize = collection.size();
+        $ordeItems: ArrayList() from  collect (OrderItem($product: product.categories contains $category) from orderObject.orderItems)
+        $orderItem: OrderItem() from $ordeItems
+	then
+        int availableItemSize = $ordeItems.size();
 
         Double itemPrice = $orderItem.getProduct().getPrice();
         // TODO: puan çevirim
@@ -583,17 +555,10 @@ rule "Discount by point over limit and credit for certain groups"
         $group : ProductGroup() from $eligbleGroups
         $campaign : Campaign(name == "Seçili ürün gruplarında xTL üzeri alışverişe özel ytl puan kampanyası") from $eligbleCampaigns
 		orderObject: Order(paymentType.totalAmount > $campaign.limit)
-        $orderItem : OrderItem($product: product.groups contains $group) from orderObject.orderItems
+        $ordeItems: ArrayList() from  collect (OrderItem($product: product.groups contains $group)from orderObject.orderItems)
+        $orderItem: OrderItem() from $ordeItems
 	then
-
-        List<OrderItem> collection = new ArrayList<>();
-        for (OrderItem item : orderObject.getOrderItems()){
-            for (Object group : $eligbleGroups){
-                ProductGroup currentGroup = (ProductGroup) group;
-                if (item.getProduct().getGroups().contains(currentGroup)) collection.add(item);
-            }
-        }
-        int availableItemSize = collection.size();
+        int availableItemSize = $ordeItems.size();
         Double itemPrice = $orderItem.getProduct().getPrice();
         Double itemDiscount = $campaign.getBenefit().getDiscount().getAmount() / availableItemSize;
         orderObject.getSimulatedPaymentOptions().add(new OrderItem($orderItem.getProduct(),
@@ -631,37 +596,43 @@ rule "Discount by cash over limit for certain groups"
         $group : ProductGroup() from $eligbleGroups
         $campaign : Campaign(name == "Seçili ürün gruplarında xTL üzeri alışverişe özel ytl indirim kampanyası") from $eligbleCampaigns
         orderObject: Order(paymentType.totalAmount > $campaign.limit)
-        $orderItem : OrderItem($product: product.groups contains $group) from orderObject.orderItems
+        $ordeItems: ArrayList() from  collect (OrderItem($product: product.groups contains $group)from orderObject.orderItems)
+        $orderItem: OrderItem() from $ordeItems
 	then
-        List<OrderItem> collection = new ArrayList<>();
-        for (OrderItem item : orderObject.getOrderItems()){
-            for (Object group : $eligbleGroups){
-                ProductGroup currentGroup = (ProductGroup) group;
-                if (item.getProduct().getGroups().contains(currentGroup)) collection.add(item);
-            }
-        }
-        int availableItemSize = collection.size();
-        Double itemPrice = $orderItem.getProduct().getPrice();
-        Double itemDiscount = $campaign.getBenefit().getDiscount().getAmount() / availableItemSize;
+//        //Long availableItemSize = orderObject.getOrderItems().stream().filter(orderItem -> $eligbleGroups.stream().anyMatch(t -> orderItem.getProduct().getGroups().stream().map(ProductGroup::getType).anyMatch(x -> x.equals(((ProductGroup)t).getType())))).count();
+//        List<OrderItem> collection = new ArrayList<>();
+//        for (OrderItem item : orderObject.getOrderItems()){
+//            for (Object group : $eligbleGroups){
+//                ProductGroup currentGroup = (ProductGroup) group;
+//                if (item.getProduct().getGroups().contains(currentGroup)) collection.add(item);
+//            }
+//        }
+//        int availableItemSize = collection.size();
+        int availableItemSize = $ordeItems.size();
 
-        orderObject.getSimulatedPaymentOptions().add(new OrderItem($orderItem.getProduct(),
-                                                    new Payment(orderObject.getPaymentType().getType(),
-                                                        new Discount(
-                                                                $campaign.getBenefit().getDiscount().getType(),
-                                                                itemDiscount
-                                                        ),
-                                                        itemPrice,
-                                                        itemPrice - itemDiscount
-                                                         ),
-                                                        $campaign
-                                                           ));
+//        for(Object o : $ordeItems){
+//            OrderItem $orderItem = (OrderItem) o;
+            Double itemPrice = $orderItem.getProduct().getPrice();
+            Double itemDiscount = $campaign.getBenefit().getDiscount().getAmount() / availableItemSize;
 
-        System.out.println(     "Campaign: "            + $campaign.getName()
-                              + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
-                              + " Item Discount:"       + itemDiscount
-                              + " Item Price: "         + itemPrice
-                              + " Final Price: "        + (itemPrice - itemDiscount));
-        System.out.println("\n\n\n");
+            orderObject.getSimulatedPaymentOptions().add(new OrderItem($orderItem.getProduct(),
+                                                        new Payment(orderObject.getPaymentType().getType(),
+                                                            new Discount(
+                                                                    $campaign.getBenefit().getDiscount().getType(),
+                                                                    itemDiscount
+                                                            ),
+                                                            itemPrice,
+                                                            itemPrice - itemDiscount
+                                                             ),
+                                                            $campaign
+                                                               ));
+
+            System.out.println(     "Campaign: "            + $campaign.getName()
+                                  + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
+                                  + " Item Discount:"       + itemDiscount
+                                  + " Item Price: "         + itemPrice);
+            System.out.println("\n\n\n");
+//        }
 
 	end
 
@@ -673,7 +644,8 @@ rule "Discount by percent over limit  for certain groups"
         $group : ProductGroup() from $eligbleGroups
         $campaign : Campaign(name == "Seçili ürün gruplarında xTL üzeri alışverişe özel ytl puan kampanyası") from $eligbleCampaigns
         orderObject: Order(paymentType.totalAmount > $campaign.limit)
-        $orderItem : OrderItem($product: product.groups contains $group) from orderObject.orderItems
+        $ordeItems: ArrayList() from  collect (OrderItem($product: product.groups contains $group)from orderObject.orderItems)
+        $orderItem: OrderItem() from $ordeItems
 	then
         Double itemPrice = $orderItem.getProduct().getPrice();
         Double itemDiscount = itemPrice * $campaign.getBenefit().getDiscount().getAmount()/100;
