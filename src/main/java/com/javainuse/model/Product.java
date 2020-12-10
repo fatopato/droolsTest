@@ -1,23 +1,19 @@
 package com.javainuse.model;
 
-import java.util.ArrayList;
-
 public class Product {
 
 	private String type;
 	private String name;
-	private ArrayList<ProductCategory> categories = new ArrayList<>();
-	private ArrayList<ProductGroup> groups = new ArrayList<>();
+	private ProductCategory category;
 	private Double price;
 
 	public Product() {
 	}
 
-	public Product(String type, String name, ArrayList<ProductCategory> categories, ArrayList<ProductGroup> groups, Double price) {
+	public Product(String type, String name, ProductCategory category, Double price) {
 		this.type = type;
 		this.name = name;
-		this.categories = categories;
-		this.groups = groups;
+		this.category = category;
 		this.price = price;
 	}
 
@@ -37,20 +33,12 @@ public class Product {
 		this.name = name;
 	}
 
-	public ArrayList<ProductCategory> getCategories() {
-		return categories;
+	public ProductCategory getCategory() {
+		return category;
 	}
 
-	public void setCategories(ArrayList<ProductCategory> categories) {
-		this.categories = categories;
-	}
-
-	public ArrayList<ProductGroup> getGroups() {
-		return groups;
-	}
-
-	public void setGroups(ArrayList<ProductGroup> groups) {
-		this.groups = groups;
+	public void setCategory(ProductCategory category) {
+		this.category = category;
 	}
 
 	public Double getPrice() {
@@ -66,8 +54,7 @@ public class Product {
 		return "Product{" +
 				"type='" + type + '\'' +
 				", name='" + name + '\'' +
-				", categories=" + categories +
-				", groups=" + groups +
+				", categories=" + category +
 				", price=" + price +
 				'}';
 	}

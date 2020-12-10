@@ -16,13 +16,9 @@ import java.util.List;
 public class JewelleryShopService {
 
 	private final KieContainer kieContainer;
-	private final List<Product> eligibleProducts = new ArrayList<Product>();
 	private final List<Campaign> eligibleCampaigns = new ArrayList<Campaign>();
-	private final List<ProductCategory> eligibleCategories = new ArrayList<ProductCategory>();
-	private final List<ProductGroup> eligibleGroups = new ArrayList<ProductGroup>();
 	private final HashMap<String, ProductCategory> categoryHashMap = new HashMap<>();
 	private final HashMap<String, Product> productHashMap = new HashMap<>();
-	private final HashMap<String, ProductGroup> groupHashMap = new HashMap<>();
 
 	@Autowired
 	public JewelleryShopService(KieContainer kieContainer) {
@@ -39,18 +35,17 @@ public class JewelleryShopService {
 	}
 
 	public void generateProducts(){
-		productHashMap.put("Nokia 3500", new Product("gold", "Nokia 3500", getAsList(categoryHashMap.get("house")), getAsList(groupHashMap.get("houses")) , 100.00));
-		productHashMap.put("Huawei A11", new Product("silver", "Huawei A11",  getAsList(categoryHashMap.get("house")), getAsList(groupHashMap.get("houses")), 1200.00));
-		productHashMap.put("Nokia 3652", new Product("platinum", "Nokia 3652",  getAsList(categoryHashMap.get("house")), getAsList(groupHashMap.get("houses")), 1030.00));
-		productHashMap.put("Motorola", new Product("gold", "Motorola",  getAsList(categoryHashMap.get("house")), getAsList(groupHashMap.get("houses")), 1030.00));
-		productHashMap.put("iPhone Pro Max 12", new Product("silver", "iPhone Pro Max 12",  getAsList(categoryHashMap.get("house")), getAsList(groupHashMap.get("houses")), 1004.00));
+		productHashMap.put("Nokia 3500", new Product("gold", "Nokia 3500", categoryHashMap.get("house") , 100.00));
+		productHashMap.put("Huawei A11", new Product("silver", "Huawei A11",  categoryHashMap.get("house"), 1200.00));
+		productHashMap.put("Nokia 3652", new Product("platinum", "Nokia 3652",  categoryHashMap.get("house"), 1030.00));
+		productHashMap.put("Motorola", new Product("gold", "Motorola",  categoryHashMap.get("house"), 1030.00));
+		productHashMap.put("iPhone Pro Max 12", new Product("silver", "iPhone Pro Max 12",  categoryHashMap.get("house"), 1004.00));
 	}
 
 	public void  generateCampaigns(){
 		HashMap<String, Object> parameters = new HashMap<>();
 		parameters.put("categories", categoryHashMap);
 		parameters.put("products", productHashMap);
-		parameters.put("groups", groupHashMap);
 
 		this.eligibleCampaigns.add(new Campaign(1L, "%x indirim kampanyası", "single", new Benefit(1L, "discount by percentage",  new Discount("percent", 10.0))));
 		this.eligibleCampaigns.add(new Campaign(2L,  "xTL indirim kampanyası", "single", new Benefit(2L, "discount by cash",  new Discount("cash", 100.0))));
@@ -91,38 +86,10 @@ public class JewelleryShopService {
 		categoryHashMap.put("drone", new ProductCategory(5L, "drone"));
 	}
 
-	public void generateGroups(){
-		groupHashMap.put("phones",new ProductGroup(1L, "phones"));
-		groupHashMap.put("computers",new ProductGroup(2L, "computers"));
-		groupHashMap.put("cars",new ProductGroup(3L, "cars"));
-		groupHashMap.put("houses",new ProductGroup(4L, "houses"));
-		groupHashMap.put("drones",new ProductGroup(5L, "drones"));
-	}
-
 	@PostConstruct
 	public void initialize(){
 		generateCategories();
-		generateGroups();
 		generateProducts();
 		generateCampaigns();
-	}
-
-	public List<Product> getEligibleProducts(){
-		return this.eligibleProducts;
-	}
-
-	public Double calculate(){
-		return 0.0;
-	}
-
-	private ArrayList getAsList(Object... objects){
-		ArrayList<Object> list = new ArrayList<>(Arrays.asList(objects));
-		return list;
-	}
-
-	public void test() {
-		Order orderObject = new Order();
-		Long availableItemSize = orderObject.getOrderItems().stream().filter(orderItem -> this.eligibleGroups.stream().anyMatch(t -> orderItem.getProduct().getGroups().stream().map(ProductGroup::getType).anyMatch(x -> x.equals(((ProductGroup)t).getType())))).count();
-		System.out.println(availableItemSize);
 	}
 }
