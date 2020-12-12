@@ -1,11 +1,15 @@
 package com.javainuse.model;
 
-public class Product {
+import java.util.ArrayList;
+import java.util.List;
 
+public class Product {
+	private Long id;
 	private String type;
 	private String name;
 	private ProductCategory category;
 	private Double price;
+	private List<ProductAttribute> attributeList = new ArrayList<>();
 
 	public Product() {
 	}
@@ -15,6 +19,50 @@ public class Product {
 		this.name = name;
 		this.category = category;
 		this.price = price;
+	}
+
+	public Product(Long id, String type, String name, ProductCategory category, Double price) {
+		this.id = id;
+		this.type = type;
+		this.name = name;
+		this.category = category;
+		this.price = price;
+	}
+
+	public Product(Long id, String type, String name, ProductCategory category, Double price, List<ProductAttribute> attributeList) {
+		this.id = id;
+		this.type = type;
+		this.name = name;
+		this.category = category;
+		this.price = price;
+		this.attributeList = attributeList;
+	}
+
+	public List<ProductAttribute> getAttributeList() {
+		return attributeList;
+	}
+
+	public void setAttributeList(List<ProductAttribute> attributeList) {
+		this.attributeList = attributeList;
+	}
+
+	@Override
+	public String toString() {
+		return "Product{" +
+				"id=" + id +
+				", type='" + type + '\'' +
+				", name='" + name + '\'' +
+				", category=" + category +
+				", price=" + price +
+				'}';
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
 	}
 
 	public String getType() {
@@ -49,13 +97,4 @@ public class Product {
 		this.price = price;
 	}
 
-	@Override
-	public String toString() {
-		return "Product{" +
-				"type='" + type + '\'' +
-				", name='" + name + '\'' +
-				", categories=" + category +
-				", price=" + price +
-				'}';
-	}
 }

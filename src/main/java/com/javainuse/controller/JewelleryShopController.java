@@ -1,5 +1,6 @@
 package com.javainuse.controller;
 
+import com.javainuse.model.CampaignBody;
 import com.javainuse.model.Order;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -7,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import com.javainuse.model.Product;
 import com.javainuse.service.JewelleryShopService;
 
+import javax.validation.Valid;
 import java.util.Timer;
 
 @RestController
@@ -28,6 +30,12 @@ public class JewelleryShopController {
 		long end = System.currentTimeMillis();
 		System.out.println(end - start);
 		return order;
+	}
+
+	@RequestMapping(value = "/createCampaign", method = RequestMethod.POST, produces = "application/json")
+	public CampaignBody createCampaign(@Valid @RequestBody CampaignBody campaignBody){
+		CampaignBody campaign = jewelleryShopService.createCampaign(campaignBody);
+		return campaign;
 	}
 
 }

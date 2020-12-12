@@ -1,7 +1,7 @@
 package com.javainuse.model;
 
 public class Payment {
-    private String type;
+    private PaymentMethod method;
     private Discount discount;
     private Double totalAmount;
     private Double finalAmount;
@@ -9,19 +9,19 @@ public class Payment {
     public Payment() {
     }
 
-    public Payment(String type, Discount discount, Double totalAmount, Double finalAmount) {
-        this.type = type;
+    public Payment(PaymentMethod method, Discount discount, Double totalAmount, Double finalAmount) {
+        this.method = method;
         this.discount = discount;
         this.totalAmount = totalAmount;
         this.finalAmount = finalAmount;
     }
 
-    public String getType() {
-        return type;
+    public PaymentMethod getMethod() {
+        return method;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setMethod(PaymentMethod method) {
+        this.method = method;
     }
 
     public Discount getDiscount() {
@@ -51,7 +51,7 @@ public class Payment {
     @Override
     public String toString() {
         return "Payment{" +
-                "type='" + type + '\'' +
+                "type='" + method + '\'' +
                 ", discount=" + discount +
                 ", totalAmount=" + totalAmount +
                 ", finalAmount=" + finalAmount +

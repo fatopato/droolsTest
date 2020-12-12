@@ -8,9 +8,20 @@ public class Campaign {
     private String type;
     private Benefit benefit;
     private Double limit;
+    private PaymentMethod paymentMethod;
     private HashMap<String, Object> parameters = new HashMap<>();
 
     public Campaign() {
+    }
+
+    public Campaign(Long id, String name, String type, Benefit benefit, Double limit, PaymentMethod paymentMethod, HashMap<String, Object> parameters) {
+        this.id = id;
+        this.name = name;
+        this.type = type;
+        this.benefit = benefit;
+        this.limit = limit;
+        this.paymentMethod = paymentMethod;
+        this.parameters = parameters;
     }
 
     public Campaign(Long id, String name, String type, Benefit benefit) {
@@ -45,6 +56,14 @@ public class Campaign {
         this.limit = limit;
     }
 
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
     @Override
     public String toString() {
         return "Campaign{" +
@@ -53,6 +72,7 @@ public class Campaign {
                 ", type='" + type + '\'' +
                 ", benefit=" + benefit +
                 ", limit=" + limit +
+                ", paymentMethod=" + paymentMethod +
                 ", parameters=" + parameters +
                 '}';
     }

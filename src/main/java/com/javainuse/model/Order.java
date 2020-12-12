@@ -7,15 +7,15 @@ public class Order {
     private ArrayList<OrderItem>  orderItems = new ArrayList<OrderItem>();
     // TODO: Simulated payment list
     private ArrayList<OrderItem> simulatedPaymentOptions = new ArrayList<OrderItem>();
-    private Payment paymentType;
+    private Payment payment;
 
     public Order() {
     }
 
-    public Order(ArrayList<OrderItem> orderItems, ArrayList<OrderItem> simulatedPaymentOptions, Payment paymentType) {
+    public Order(ArrayList<OrderItem> orderItems, ArrayList<OrderItem> simulatedPaymentOptions, Payment payment) {
         this.orderItems = orderItems;
         this.simulatedPaymentOptions = simulatedPaymentOptions;
-        this.paymentType = paymentType;
+        this.payment = payment;
     }
 
     @Override
@@ -23,7 +23,7 @@ public class Order {
         return "Order{" +
                 "orderItems=" + orderItems +
                 ", simulatedPaymentOptions=" + simulatedPaymentOptions +
-                ", paymentType='" + paymentType + '\'' +
+                ", paymentType='" + payment + '\'' +
                 '}';
     }
 
@@ -43,11 +43,11 @@ public class Order {
         this.simulatedPaymentOptions = simulatedPaymentOptions;
     }
 
-    public Payment getPaymentType() {
-        return paymentType;
+    public Payment getPayment() {
+        return payment;
     }
 
-    public void setPaymentType(Payment paymentType) {
-        this.paymentType = paymentType;
+    public void setPayment(Payment payment) {
+        this.payment = payment;
     }
 }

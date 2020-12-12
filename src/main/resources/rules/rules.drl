@@ -11,608 +11,74 @@ import com.javainuse.model.ProductCategory;
 import com.javainuse.model.Campaign;
 import com.javainuse.model.OrderItem;
 import com.javainuse.model.ProductGroup;
-
-
+import com.javainuse.model.ProductAttribute;
+import com.javainuse.model.CampaignBody;
+import com.javainuse.model.CampaignFilter;
+import com.javainuse.model.BenefitType;
+import com.javainuse.model.PaymentMethod;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
 import java.lang.Double;
 
-//%x indirim kampanyası
-rule "Discount by percentage"
-	when
-        $eligbleCampaigns : ArrayList()
-        $campaign : Campaign(name == "%x indirim kampanyası") from $eligbleCampaigns
-		orderObject: Order()
-
-	then
-	    for(OrderItem orderItem : orderObject.getOrderItems()) {
-	        Double itemPrice = orderItem.getProduct().getPrice();
-            Double itemDiscount = itemPrice * $campaign.getBenefit().getDiscount().getAmount()/100;
-
-            orderObject.getSimulatedPaymentOptions().add(new OrderItem(orderItem.getProduct(),
-                                                        new Payment(orderObject.getPaymentType().getType(),
-                                                                new Discount(
-                                                                    $campaign.getBenefit().getDiscount().getType(),
-                                                                    itemDiscount
-                                                                    ),
-                                                                itemPrice,
-                                                                itemPrice - itemDiscount
-                                                               ),
-                                                            $campaign
-                                                               ));
-                System.out.println(     "Campaign: "            + $campaign.getName()
-                                      + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
-                                      + " Item Discount:"       + itemDiscount
-                                      + " Item Price: "         + itemPrice
-                                      + " Final Price: "        + (itemPrice - itemDiscount));
-	    }
-
-
-        System.out.println("\n\n\n");
-	end
-
-
-//xTL indirim kampanyası
-rule "Discount by amount"
-	when
-        $eligbleCampaigns : ArrayList()
-        $campaign : Campaign(name == "xTL indirim kampanyası") from $eligbleCampaigns
-		orderObject: Order()
-
-	then
-        int availableItemSize = orderObject.getOrderItems().size();
-        for(OrderItem orderItem : orderObject.getOrderItems()) {
-            Double itemPrice = orderItem.getProduct().getPrice();
-            Double itemDiscount = $campaign.getBenefit().getDiscount().getAmount() / availableItemSize;
-
-            orderObject.getSimulatedPaymentOptions().add(new OrderItem(orderItem.getProduct(),
-                                                        new Payment(orderObject.getPaymentType().getType(),
-                                                                new Discount(
-                                                                    $campaign.getBenefit().getDiscount().getType(),
-                                                                    itemDiscount
-                                                                    ),
-                                                                itemPrice,
-                                                                itemPrice - itemDiscount
-                                                               ),
-                                                            $campaign
-                                                               ));
-                System.out.println(     "Campaign: "            + $campaign.getName()
-                                      + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
-                                      + " Item Discount:"       + itemDiscount
-                                      + " Item Price: "         + itemPrice
-                                      + " Final Price: "        + (itemPrice - itemDiscount));
-        }
-        System.out.println("\n\n\n");
-
-	end
-
-// Seçili üründe %x indirim kampanyası
-rule "Discount by percentage on certain products"
-    when
-        $eligbleCampaigns : ArrayList()
-        $campaign : Campaign(name == "Seçili üründe %x indirim kampanyası") from $eligbleCampaigns
-        orderObject : Order()
-        $orderItem : OrderItem() from orderObject.orderItems
-        $hash : HashMap() from $campaign.parameters.get("products")
-        $products: ArrayList() from collect (Product(name == $orderItem.product.name) from $hash.values())
-        $product : Product() from $products
-    then
-
-        Double itemPrice = $orderItem.getProduct().getPrice();
-        Double itemDiscount = itemPrice * $campaign.getBenefit().getDiscount().getAmount()/100;
-        orderObject.getSimulatedPaymentOptions().add(new OrderItem($orderItem.getProduct(),
-                                                    new Payment(orderObject.getPaymentType().getType(),
-                                                            new Discount(
-                                                                $campaign.getBenefit().getDiscount().getType(),
-                                                                itemDiscount
-                                                                ),
-                                                            itemPrice,
-                                                            itemPrice - itemDiscount
-                                                           ),
-                                                        $campaign
-                                                           ));
-            System.out.println(     "Campaign: "            + $campaign.getName()
-                                  + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
-                                  + " Item Discount:"       + itemDiscount
-                                  + " Item Price: "         + itemPrice
-                                  + " Final Price: "        + (itemPrice - itemDiscount));
-        System.out.println("\n\n\n");
-    end
-
-// Seçili üründe xTL indirim kampanyası
-rule "Discount by cash on certain products"
-    when
-        $eligbleCampaigns : ArrayList()
-        $campaign : Campaign(name == "Seçili üründe xTL indirim kampanyası") from $eligbleCampaigns
-        orderObject : Order()
-        $orderItem : OrderItem() from orderObject.orderItems
-        $hash : HashMap() from $campaign.parameters.get("products")
-        $products: ArrayList() from collect (Product(name == $orderItem.product.name) from $hash.values())
-        $product : Product() from $products
-	then
-        int availableItemSize = $products.size();
-        Double itemPrice = $orderItem.getProduct().getPrice();
-        Double itemDiscount = $campaign.getBenefit().getDiscount().getAmount() / availableItemSize;
-
-        orderObject.getSimulatedPaymentOptions().add(new OrderItem($orderItem.getProduct(),
-                                                    new Payment(orderObject.getPaymentType().getType(),
-                                                            new Discount(
-                                                                $campaign.getBenefit().getDiscount().getType(),
-                                                                itemDiscount
-                                                                ),
-                                                            itemPrice,
-                                                            itemPrice - itemDiscount
-                                                           ),
-                                                        $campaign
-                                                           ));
-            System.out.println(     "Campaign: "            + $campaign.getName()
-                                  + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
-                                  + " Item Discount:"       + itemDiscount
-                                  + " Item Price: "         + itemPrice
-                                  + " Final Price: "        + (itemPrice - itemDiscount));
-        System.out.println("\n\n\n");
-    end
-
-
-// Kredi kartı ödemelerinde %x indirim kampanyası
-rule "Discount by percentage on credit card payment"
-    when
-        $eligbleCampaigns : ArrayList()
-        $campaign : Campaign(name == "Kredi kartı ödemelerinde %x indirim kampanyası") from $eligbleCampaigns
-        orderObject : Order(paymentType.type == "credit")
-        // $campaign : Campaign(benefit.discount.type == "percent") from $eligbleCampaigns
-    then
-
-        for(OrderItem orderItem : orderObject.getOrderItems()) {
-
-            Double itemPrice = orderItem.getProduct().getPrice();
-            Double itemDiscount = itemPrice * $campaign.getBenefit().getDiscount().getAmount()/100;
-
-            orderObject.getSimulatedPaymentOptions().add(new OrderItem(orderItem.getProduct(),
-                                                    new Payment(orderObject.getPaymentType().getType(),
-                                                            new Discount(
-                                                                $campaign.getBenefit().getDiscount().getType(),
-                                                                itemDiscount
-                                                                ),
-                                                            itemPrice,
-                                                            itemPrice - itemDiscount
-                                                           ),
-                                                    $campaign
-                                                           ));
-            System.out.println(     "Campaign: "            + $campaign.getName()
-                                  + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
-                                  + " Item Discount:"       + itemDiscount
-                                  + " Item Price: "         + itemPrice
-                                  + " Final Price: "        + (itemPrice - itemDiscount));
-        }
-
-        System.out.println("\n\n\n");
-    end
-
-// Nakit ödemelerde xTL indirim kampanyası
-rule "Discount by cash on cash payment"
-    when
-        $eligbleCampaigns : ArrayList()
-        $campaign : Campaign(name == "Nakit ödemelerde xTL indirim kampanyası") from $eligbleCampaigns
-        orderObject : Order(paymentType.type == "cash")
-        //$campaign : Campaign(benefit.discount.type == "cash") from $eligbleCampaigns
-    then
-        int availableItemSize = orderObject.getOrderItems().size();
-        for(OrderItem orderItem : orderObject.getOrderItems()) {
-
-            Double itemPrice = orderItem.getProduct().getPrice();
-            Double itemDiscount = $campaign.getBenefit().getDiscount().getAmount() / availableItemSize;
-
-            //sum += orderItem.getProduct().getPrice();
-            orderObject.getSimulatedPaymentOptions().add(new OrderItem(orderItem.getProduct(),
-                                                        new Payment(orderObject.getPaymentType().getType(),
-                                                            new Discount(
-                                                                $campaign.getBenefit().getDiscount().getType(),
-                                                                itemDiscount
-                                                                ),
-                                                            itemPrice,
-                                                            itemPrice - itemDiscount
-                                                               ),
-                                                        $campaign
-                                                               ));
-            System.out.println(     "Campaign: "            + $campaign.getName()
-                                  + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
-                                  + " Item Discount:"       + itemDiscount
-                                  + " Item Price: "         + itemPrice
-                                  + " Final Price: "        + (itemPrice - itemDiscount));
-        }
-        System.out.println("\n\n\n");
-    end
-
-// Seçili ürün kategorilerinde %x indirim kampanyası
-rule "Discount by percentage on certain product categories"
-    when
-        $eligbleCampaigns : ArrayList()
-        $campaign : Campaign(name == "Seçili ürün kategorilerinde %x indirim kampanyası") from $eligbleCampaigns
-        orderObject : Order()
-        //$orderItems: ArrayList() from collect($item: OrderItem() from orderObject.orderItems)
-        $hash : HashMap() from $campaign.parameters.get("categories")
-        $categories: ArrayList() from collect (ProductCategory() from $hash.values())
-        $category : ProductCategory() from $categories
-        $orderItem : OrderItem(product.category == $category) from orderObject.orderItems
-        // $campaign : Campaign(benefit.discount.type == "percent") from $eligbleCampaigns
-    then
-        Double itemPrice = $orderItem.getProduct().getPrice();
-        Double itemDiscount = itemPrice * $campaign.getBenefit().getDiscount().getAmount()/100;
-
-        orderObject.getSimulatedPaymentOptions().add(new OrderItem($orderItem.getProduct(),
-                                                    new Payment(orderObject.getPaymentType().getType(),
-                                                        new Discount(
-                                                                $campaign.getBenefit().getDiscount().getType(),
-                                                                itemDiscount
-                                                                ),
-                                                        itemPrice,
-                                                        itemPrice - itemDiscount
-                                                         ),
-                                                        $campaign
-                                                           ));
-
-        System.out.println(     "Campaign: "            + $campaign.getName()
-                              + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
-                              + " Item Discount:"       + itemDiscount
-                              + " Item Price: "         + itemPrice
-                              + " Final Price: "        + (itemPrice - itemDiscount));
-        System.out.println("\n\n\n");
-    end
-
-// Seçili ürün kategorilerinde xTL indirim kampanyası
-rule "Discount by cash on certain product categories"
-    when
-        $eligbleCampaigns : ArrayList()
-        $campaign : Campaign(name == "Seçili ürün kategorilerinde xTL indirim kampanyası") from $eligbleCampaigns
-        orderObject : Order()
-        $hash : HashMap() from $campaign.parameters.get("categories")
-        $categories: ArrayList() from collect (ProductCategory() from $hash.values())
-        $category : ProductCategory() from $categories
-        $ordeItems: ArrayList() from  collect (OrderItem($product: product.category.type == $category.type) from orderObject.orderItems)
-        $orderItem: OrderItem() from $ordeItems
-	then
-        int availableItemSize = $ordeItems.size();
-
-        Double itemPrice = $orderItem.getProduct().getPrice();
-        Double itemDiscount = $campaign.getBenefit().getDiscount().getAmount() / availableItemSize;
-
-        orderObject.getSimulatedPaymentOptions().add(new OrderItem($orderItem.getProduct(),
-                                                    new Payment(orderObject.getPaymentType().getType(),
-                                                        new Discount(
-                                                                $campaign.getBenefit().getDiscount().getType(),
-                                                                itemDiscount
-                                                        ),
-                                                        itemPrice,
-                                                        itemPrice - itemDiscount
-                                                         ),
-                                                        $campaign
-                                                           ));
-
-        System.out.println(     "Campaign: "            + $campaign.getName()
-                              + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
-                              + " Item Discount:"       + itemDiscount
-                              + " Item Price: "         + itemPrice
-                              + " Final Price: "        + (itemPrice - itemDiscount));
-        System.out.println("\n\n\n");
-    end
-
-
-// TODO: Kontrol et
-// Seçili ürünlerde x puan indirim kampanyası
-rule "Discount by point on certain products"
-    when
-        $eligbleCampaigns : ArrayList()
-        $campaign : Campaign(name == "Seçili ürünlerde x puan indirim kampanyası") from $eligbleCampaigns
-        orderObject : Order()
-        $eligbleProducts : ArrayList()
-        $orderItem : OrderItem() from orderObject.orderItems
-        $hash : HashMap() from $campaign.parameters.get("products")
-        $products: ArrayList() from collect (Product(name == $orderItem.product.name) from $hash.values())
-        $product : Product() from $products
-	then
-        int availableItemSize = $products.size();
-        Double itemPrice = $orderItem.getProduct().getPrice();
-        Double itemDiscount = $campaign.getBenefit().getDiscount().getAmount() / availableItemSize;
-
-        orderObject.getSimulatedPaymentOptions().add(new OrderItem($orderItem.getProduct(),
-                                                    new Payment(orderObject.getPaymentType().getType(),
-                                                            new Discount(
-                                                                $campaign.getBenefit().getDiscount().getType(),
-                                                                itemDiscount
-                                                                ),
-                                                            itemPrice,
-                                                            // TODO: puan çevirim
-                                                            itemPrice
-                                                           ),
-                                                        $campaign
-                                                           ));
-            System.out.println(     "Campaign: "            + $campaign.getName()
-                                  + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
-                                  + " Item Discount:"       + itemDiscount
-                                  + " Item Price: "         + itemPrice
-                                  + " Final Price: "        + itemPrice
-                                  + " Item Point: "         + itemDiscount);
-        System.out.println("\n\n\n");
-    end
-
-// Seçili ürün kategorilerinde x puan indirim kampanyası
-rule "Discount by point on certain product categories"
-    when
-        $eligbleCampaigns : ArrayList()
-        $campaign : Campaign(name == "Seçili ürün kategorilerinde x puan indirim kampanyası") from $eligbleCampaigns
-        orderObject : Order()
-        $hash : HashMap() from $campaign.parameters.get("categories")
-        $categories: ArrayList() from collect (ProductCategory() from $hash.values())
-        $category : ProductCategory() from $categories
-        $ordeItems: ArrayList() from  collect (OrderItem($product: product.category.type == $category.type) from orderObject.orderItems)
-        $orderItem: OrderItem() from $ordeItems
-	then
-        int availableItemSize = $ordeItems.size();
-
-        Double itemPrice = $orderItem.getProduct().getPrice();
-        // TODO: puan çevirim
-        Double itemDiscount = $campaign.getBenefit().getDiscount().getAmount() / availableItemSize;
-
-        orderObject.getSimulatedPaymentOptions().add(new OrderItem($orderItem.getProduct(),
-                                                    new Payment(orderObject.getPaymentType().getType(),
-                                                            new Discount(
-                                                                $campaign.getBenefit().getDiscount().getType(),
-                                                                itemDiscount
-                                                                ),
-                                                            itemPrice,
-                                                            // TODO: puan çevirim
-                                                            itemPrice
-                                                           ),
-                                                        $campaign
-                                                           ));
-            System.out.println(     "Campaign: "            + $campaign.getName()
-                                  + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
-                                  + " Item Discount:"       + itemDiscount
-                                  + " Item Price: "         + itemPrice
-                                  + " Final Price: "        + itemPrice
-                                  + " Item Point: "         + itemDiscount);
-        System.out.println("\n\n\n");
-    end
-
-// ---------------- Baremli ---------------------
-
-// xTL üzeri alışverişe özel ytl puan kampanyası
-rule "Discount by point over limit"
-	when
-        $eligbleCampaigns : ArrayList()
-        $campaign : Campaign(name == "xTL üzeri alışverişe özel ytl puan kampanyası") from $eligbleCampaigns
-		orderObject: Order(paymentType.totalAmount > $campaign.limit)
-	then
-        int availableItemSize = orderObject.getOrderItems().size();
-        for(OrderItem orderItem : orderObject.getOrderItems()) {
-            Double itemPrice = orderItem.getProduct().getPrice();
-            Double itemDiscount = $campaign.getBenefit().getDiscount().getAmount() / availableItemSize;
-            orderObject.getSimulatedPaymentOptions().add(new OrderItem(orderItem.getProduct(),
-                                                        new Payment(orderObject.getPaymentType().getType(),
-                                                                new Discount(
-                                                                    $campaign.getBenefit().getDiscount().getType(),
-                                                                    itemDiscount
-                                                                    ),
-                                                                itemPrice,
-                                                                // TODO: puan çevirim
-                                                                itemPrice
-                                                               ),
-                                                            $campaign
-                                                               ));
-                System.out.println(     "Campaign: "            + $campaign.getName()
-                                      + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
-                                      + " Item Discount:"       + itemDiscount
-                                      + " Item Price: "         + itemPrice
-                                      + " Final Price: "        + itemPrice
-                                      + " Item Point: "         + itemDiscount);
-        }
-        System.out.println("\n\n\n");
-
-	end
-
-//xTL üzeri alışverişe özel ytl indirim kampanyası
-rule "Discount by cash over limit"
-	when
-        $eligbleCampaigns : ArrayList()
-        $campaign : Campaign(name == "xTL üzeri alışverişe özel ytl indirim kampanyası") from $eligbleCampaigns
-		orderObject: Order(paymentType.totalAmount > $campaign.limit)
-	then
-        int availableItemSize = orderObject.getOrderItems().size();
-        for(OrderItem orderItem : orderObject.getOrderItems()) {
-            Double itemPrice = orderItem.getProduct().getPrice();
-            Double itemDiscount = $campaign.getBenefit().getDiscount().getAmount() / availableItemSize;
-
-            orderObject.getSimulatedPaymentOptions().add(new OrderItem(orderItem.getProduct(),
-                                                        new Payment(orderObject.getPaymentType().getType(),
-                                                                new Discount(
-                                                                    $campaign.getBenefit().getDiscount().getType(),
-                                                                    itemDiscount
-                                                                    ),
-                                                                itemPrice,
-                                                                itemPrice - itemDiscount
-                                                               ),
-                                                            $campaign
-                                                               ));
-                System.out.println(     "Campaign: "            + $campaign.getName()
-                                      + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
-                                      + " Item Discount:"       + itemDiscount
-                                      + " Item Price: "         + itemPrice
-                                      + " Final Price: "        + (itemPrice - itemDiscount));
-        }
-        System.out.println("\n\n\n");
-
-	end
-
-
-
-//xTL üzeri alışverişe özel %y puan kampanyası
-rule "Discount by percent point over limit"
-	when
-        $eligbleCampaigns : ArrayList()
-        $campaign : Campaign(name == "xTL üzeri alışverişe özel %y puan kampanyası") from $eligbleCampaigns
-		orderObject: Order(paymentType.totalAmount > $campaign.limit)
-	then
-
-        for(OrderItem orderItem : orderObject.getOrderItems()) {
-            Double itemPrice = orderItem.getProduct().getPrice();
-            Double itemDiscount = itemPrice * $campaign.getBenefit().getDiscount().getAmount()/100;
-
-            orderObject.getSimulatedPaymentOptions().add(new OrderItem(orderItem.getProduct(),
-                                                        new Payment(orderObject.getPaymentType().getType(),
-                                                                new Discount(
-                                                                    $campaign.getBenefit().getDiscount().getType(),
-                                                                    itemDiscount
-                                                                    ),
-                                                                itemPrice,
-                                                                // TODO: puan çevirim
-                                                                itemPrice
-                                                               ),
-                                                            $campaign
-                                                               ));
-                System.out.println(     "Campaign: "            + $campaign.getName()
-                                      + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
-                                      + " Item Discount:"       + itemDiscount
-                                      + " Item Price: "         + itemPrice
-                                      + " Final Price: "        + itemPrice
-                                      + " Item Point: "         + itemDiscount);
-        }
-        System.out.println("\n\n\n");
-
-	end
-
-//xTL üzeri kredi kartı ödemelerine özel yTL indirim kampanyası
-rule "Discount by cash over limit and credit"
-	when
-        $eligbleCampaigns : ArrayList()
-        $campaign : Campaign(name == "xTL üzeri kredi kartı ödemelerine özel yTL indirim kampanyası") from $eligbleCampaigns
-		orderObject: Order(paymentType.totalAmount > $campaign.limit, paymentType.type == "credit")
-	then
-        int availableItemSize = orderObject.getOrderItems().size();
-        for(OrderItem orderItem : orderObject.getOrderItems()) {
-            Double itemPrice = orderItem.getProduct().getPrice();
-            Double itemDiscount = $campaign.getBenefit().getDiscount().getAmount() / availableItemSize;
-
-            orderObject.getSimulatedPaymentOptions().add(new OrderItem(orderItem.getProduct(),
-                                                        new Payment(orderObject.getPaymentType().getType(),
-                                                                new Discount(
-                                                                    $campaign.getBenefit().getDiscount().getType(),
-                                                                    itemDiscount
-                                                                    ),
-                                                                itemPrice,
-                                                                itemPrice - itemDiscount
-                                                               ),
-                                                            $campaign
-                                                               ));
-                System.out.println(     "Campaign: "            + $campaign.getName()
-                                      + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
-                                      + " Item Discount:"       + itemDiscount
-                                      + " Item Price: "         + itemPrice
-                                      + " Final Price: "        + (itemPrice - itemDiscount));
-        }
-        System.out.println("\n\n\n");
-
-	end
-
-//xTL nakit ödemelere özel %y indirim kampanyası
-rule "Discount by percent over limit and credit"
-	when
-        $eligbleCampaigns : ArrayList()
-        $campaign : Campaign(name == "xTL nakit ödemelere özel %y indirim kampanyası") from $eligbleCampaigns
-		orderObject: Order(paymentType.totalAmount > $campaign.limit, paymentType.type == "cash")
-	then
-	    for(OrderItem orderItem : orderObject.getOrderItems()) {
-	        Double itemPrice = orderItem.getProduct().getPrice();
-            Double itemDiscount = itemPrice * $campaign.getBenefit().getDiscount().getAmount()/100;
-
-            orderObject.getSimulatedPaymentOptions().add(new OrderItem(orderItem.getProduct(),
-                                                        new Payment(orderObject.getPaymentType().getType(),
-                                                                new Discount(
-                                                                    $campaign.getBenefit().getDiscount().getType(),
-                                                                    itemDiscount
-                                                                    ),
-                                                                itemPrice,
-                                                                itemPrice - itemDiscount
-                                                               ),
-                                                            $campaign
-                                                               ));
-                System.out.println(     "Campaign: "            + $campaign.getName()
-                                      + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
-                                      + " Item Discount:"       + itemDiscount
-                                      + " Item Price: "         + itemPrice
-                                      + " Final Price: "        + (itemPrice - itemDiscount));
-	    }
-        System.out.println("\n\n\n");
-
-	end
-// TODO: Product'ın biirden fazla grubu olabilir mi? Grup = Kategori. Grup attribute olarak tanımlanacak
-// TODO: Buraya bak, Toplam tutar mı yoksa grup tutarı mı?
-//Seçili ürün gruplarında xTL üzeri alışverişe özel ytl puan kampanyası
-rule "Discount by point over limit and credit for certain groups"
-	when
-        $eligbleCampaigns : ArrayList()
-        $campaign : Campaign(name == "Seçili ürün gruplarında xTL üzeri alışverişe özel ytl puan kampanyası") from $eligbleCampaigns
-        $hash : HashMap() from $campaign.parameters.get("categories")
-        $categories: ArrayList() from collect (ProductCategory() from $hash.values())
-        $category : ProductCategory() from $categories
-		orderObject: Order(paymentType.totalAmount > $campaign.limit)
-        $ordeItems: ArrayList() from  collect (OrderItem($product: product.category.type == $category.type)from orderObject.orderItems)
-        Number(doubleValue > $campaign.limit) from accumulate(
-                          OrderItem($price : product.getPrice()) from $orderItems,
-                          sum($price)
-                       )
-        $orderItem: OrderItem() from $ordeItems
-	then
-        int availableItemSize = $ordeItems.size();
-        Double itemPrice = $orderItem.getProduct().getPrice();
-        Double itemDiscount = $campaign.getBenefit().getDiscount().getAmount() / availableItemSize;
-        orderObject.getSimulatedPaymentOptions().add(new OrderItem($orderItem.getProduct(),
-                                                    new Payment(orderObject.getPaymentType().getType(),
-                                                            new Discount(
-                                                                $campaign.getBenefit().getDiscount().getType(),
-                                                                itemDiscount
-                                                                ),
-                                                            itemPrice,
-                                                            // TODO: puan çevirim
-                                                            itemPrice
-                                                           ),
-                                                        $campaign
-                                                           ));
-            System.out.println(     "Campaign: "            + $campaign.getName()
-                                  + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
-                                  + " Item Discount:"       + itemDiscount
-                                  + " Item Price: "         + itemPrice
-                                  + " Final Price: "        + itemPrice
-                                  + " Item Point: "         + itemDiscount);
-
-        System.out.println("\n\n\n");
-
-
-
-	end
-
-
-function boolean checkOrderLimit(Order order, double limit){
+function java.lang.Double calculateDiscount(Double price, CampaignBody campaign, int size){
     // access user's double[] and calculate the sum, do the test
-    double sum = 0;
-    for (Object orderItem : order.getOrderItems()){
-        sum += ((OrderItem)orderItem).getProduct().getPrice();
+    Double itemDiscount = 0.0;
+    if (campaign.getBenefitType() == BenefitType.CASH){
+        itemDiscount = campaign.getBenefitAmount() / size;
+    }else if (campaign.getBenefitType() == BenefitType.PERCENT){
+        itemDiscount = price * campaign.getBenefitAmount() / 100;
     }
-    System.out.println("SUM: " + sum);
-    return sum > limit;
+    return itemDiscount;
 }
 
-//Seçili ürün gruplarında xTL üzeri alışverişe özel ytl indirim kampanyası
-rule "Discount by cash over limit for certain groups"
+
+// Tüm ürünlere uygulanan kampanya (benefit tipi, miktar limiti ve ödeme metodu filtersi dahildir)
+rule "Rule for campaigns with no product filter"
 	when
         $eligbleCampaigns : ArrayList()
-        $campaign : Campaign(name == "Seçili ürün gruplarında xTL üzeri alışverişe özel ytl indirim kampanyası") from $eligbleCampaigns
+        $campaign : CampaignBody(campaignFilter == CampaignFilter.NONE) from $eligbleCampaigns
+		orderObject: Order(payment.totalAmount > $campaign.limit, (payment.method == $campaign.getPaymentMethod() || $campaign.getPaymentMethod() == PaymentMethod.ALL))
+
+	then
+	    for(OrderItem orderItem : orderObject.getOrderItems()) {
+	        Double itemPrice = orderItem.getProduct().getPrice();
+            Double itemDiscount = calculateDiscount(itemPrice, $campaign, orderObject.getOrderItems().size());
+
+            orderObject.getSimulatedPaymentOptions().add(new OrderItem(orderItem.getProduct(),
+                                                        new Payment(orderObject.getPayment().getMethod(),
+                                                                new Discount(
+                                                                    $campaign.getBenefitType().toString(),
+                                                                    itemDiscount
+                                                                    ),
+                                                                itemPrice,
+                                                                itemPrice - itemDiscount
+                                                               ),
+                                                            $campaign
+                                                               ));
+                System.out.println(     "Campaign: "            + $campaign.getName()
+                                      + " Benefit Type"         + $campaign.getBenefitType().toString()
+                                      + " Benefit Discount: "   + $campaign.getBenefitAmount()
+                                      + " Item Discount:"       + itemDiscount
+                                      + " Item Price: "         + itemPrice
+                                      + " Final Price: "        + (itemPrice - itemDiscount));
+	    }
+
+
+        System.out.println("\n\n\n");
+	end
+
+
+// Kategori filtresi uygulanan kampanya (benefit tipi, miktar limiti ve ödeme metodu filtersi dahildir)
+rule "Rule for campaigns with category filter"
+	when
+        $eligbleCampaigns : ArrayList()
+        $campaign : CampaignBody(campaignFilter == CampaignFilter.CATEGORIES) from $eligbleCampaigns
         $hash : HashMap() from $campaign.parameters.get("categories")
         $categories: ArrayList() from collect (ProductCategory() from $hash.values())
         $category : ProductCategory() from $categories
-		orderObject: Order()
-        $orderItems: ArrayList() from  collect (OrderItem($product: product.category.type == $category.type)from orderObject.orderItems)
+		orderObject: Order(payment.totalAmount > $campaign.limit, (payment.method == $campaign.getPaymentMethod() || $campaign.getPaymentMethod() == PaymentMethod.ALL))
+        $orderItems: ArrayList() from  collect (OrderItem($product: product.category.id == $category.id)from orderObject.orderItems)
 
         Number(doubleValue > $campaign.limit) from accumulate(
                   OrderItem($price : product.getPrice()) from $orderItems,
@@ -628,13 +94,13 @@ rule "Discount by cash over limit for certain groups"
         int availableItemSize = $orderItems.size();
 
         Double itemPrice = $orderItem.getProduct().getPrice();
-        Double itemDiscount = $campaign.getBenefit().getDiscount().getAmount() / availableItemSize;
+        Double itemDiscount = calculateDiscount(itemPrice, $campaign, availableItemSize);
 
         orderObject.getSimulatedPaymentOptions().add(new OrderItem($orderItem.getProduct(),
-                                                    new Payment(orderObject.getPaymentType().getType(),
+                                                    new Payment(orderObject.getPayment().getMethod(),
                                                         new Discount(
-                                                                $campaign.getBenefit().getDiscount().getType(),
-                                                                itemDiscount
+                                                                    $campaign.getBenefitType().toString(),
+                                                                    itemDiscount
                                                         ),
                                                         itemPrice,
                                                         itemPrice - itemDiscount
@@ -643,7 +109,8 @@ rule "Discount by cash over limit for certain groups"
                                                            ));
 
         System.out.println(     "Campaign: "            + $campaign.getName()
-                              + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
+                              + " Benefit Type"         + $campaign.getBenefitType().toString()
+                              + " Benefit Discount: "   + $campaign.getBenefitAmount()
                               + " Item Discount:"       + itemDiscount
                               + " Item Price: "         + itemPrice
                               + " Final Price: "        + (itemPrice - itemDiscount));
@@ -651,44 +118,747 @@ rule "Discount by cash over limit for certain groups"
         System.out.println("SIZE: " + availableItemSize);
         System.out.println("\n\n\n");
 
-
 	end
 
-//Seçili ürün gruplarında xTL üzeri alışverişe özel %y indirim kampanyası
-rule "Discount by percent over limit  for certain groups"
+// Product filtresi uygulanan kampanya (benefit tipi, miktar limiti ve ödeme metodu filtersi dahildir)
+rule "Rule for campaigns with product filter"
 	when
         $eligbleCampaigns : ArrayList()
-        $campaign : Campaign(name == "Seçili ürün gruplarında xTL üzeri alışverişe özel %y indirim kampanyası") from $eligbleCampaigns
-        $hash : HashMap() from $campaign.parameters.get("categories")
-        $categories: ArrayList() from collect (ProductCategory() from $hash.values())
-        $category : ProductCategory() from $categories
-		orderObject: Order(paymentType.totalAmount > $campaign.limit)
-        $ordeItems: ArrayList() from  collect (OrderItem($product: product.category.type == $category.type)from orderObject.orderItems)
+        $campaign : CampaignBody(campaignFilter == CampaignFilter.PRODUCTS) from $eligbleCampaigns
+        $hash : HashMap() from $campaign.parameters.get("products")
+        $products: ArrayList() from collect (Product() from $hash.values())
+        $product : Product() from $products
+		orderObject: Order(payment.totalAmount > $campaign.limit, (payment.method == $campaign.getPaymentMethod() || $campaign.getPaymentMethod() == PaymentMethod.ALL))
+        $orderItems: ArrayList() from  collect (OrderItem(product.id == $product.getId())from orderObject.orderItems)
+
         Number(doubleValue > $campaign.limit) from accumulate(
-                          OrderItem($price : product.getPrice()) from $orderItems,
-                          sum($price)
-                       )
-        $orderItem: OrderItem() from $ordeItems
+                  OrderItem($price : product.getPrice()) from $orderItems,
+                  sum($price)
+               )
+
+        $orderItem: OrderItem() from $orderItems
+//        eval(checkOrderLimit(orderObject, $campaign.getLimit()))
+
+
 	then
+        int availableItemSize = $orderItems.size();
+
         Double itemPrice = $orderItem.getProduct().getPrice();
-        Double itemDiscount = itemPrice * $campaign.getBenefit().getDiscount().getAmount()/100;
+        Double itemDiscount = calculateDiscount(itemPrice, $campaign, availableItemSize);
 
         orderObject.getSimulatedPaymentOptions().add(new OrderItem($orderItem.getProduct(),
-                                                    new Payment(orderObject.getPaymentType().getType(),
-                                                            new Discount(
-                                                                $campaign.getBenefit().getDiscount().getType(),
-                                                                itemDiscount
-                                                                ),
-                                                            itemPrice,
-                                                            itemPrice - itemDiscount
-                                                           ),
+                                                    new Payment(orderObject.getPayment().getMethod(),
+                                                        new Discount(
+                                                                    $campaign.getBenefitType().toString(),
+                                                                    itemDiscount
+                                                        ),
+                                                        itemPrice,
+                                                        itemPrice - itemDiscount
+                                                         ),
                                                         $campaign
                                                            ));
-            System.out.println(     "Campaign: "            + $campaign.getName()
-                                  + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
-                                  + " Item Discount:"       + itemDiscount
-                                  + " Item Price: "         + itemPrice
-                                  + " Final Price: "        + (itemPrice - itemDiscount));
+
+        System.out.println(     "Campaign: "            + $campaign.getName()
+                              + " Benefit Type"         + $campaign.getBenefitType().toString()
+                              + " Benefit Discount: "   + $campaign.getBenefitAmount()
+                              + " Item Discount:"       + itemDiscount
+                              + " Item Price: "         + itemPrice
+                              + " Final Price: "        + (itemPrice - itemDiscount));
+
+        System.out.println("SIZE: " + $hash);
         System.out.println("\n\n\n");
 
 	end
+
+
+
+// Product filtresi uygulanan kampanya (benefit tipi, miktar limiti ve ödeme metodu filtersi dahildir)
+rule "Rule for campaigns with attribute filter"
+	when
+        $eligbleCampaigns : ArrayList()
+        $campaign : CampaignBody(campaignFilter == CampaignFilter.ATTRIBUTES) from $eligbleCampaigns
+        $hash : HashMap() from $campaign.parameters.get("attributes")
+        $attributes: ArrayList() from collect (ProductAttribute() from $hash.values())
+        $attribute : ProductAttribute() from $attributes
+		orderObject: Order(payment.totalAmount > $campaign.limit, (payment.method == $campaign.getPaymentMethod() || $campaign.getPaymentMethod() == PaymentMethod.ALL))
+        $orderItems: ArrayList() from  collect (OrderItem($product: product.attributeList contains $attribute)from orderObject.orderItems)
+        Number(doubleValue > $campaign.limit) from accumulate(
+                  OrderItem($price : product.getPrice()) from $orderItems,
+                  sum($price)
+               )
+
+        $orderItem: OrderItem() from $orderItems
+//        eval(checkOrderLimit(orderObject, $campaign.getLimit()))
+
+
+	then
+        int availableItemSize = $orderItems.size();
+
+        Double itemPrice = $orderItem.getProduct().getPrice();
+        Double itemDiscount = calculateDiscount(itemPrice, $campaign, availableItemSize);
+
+        orderObject.getSimulatedPaymentOptions().add(new OrderItem($orderItem.getProduct(),
+                                                    new Payment(orderObject.getPayment().getMethod(),
+                                                        new Discount(
+                                                                    $campaign.getBenefitType().toString(),
+                                                                    itemDiscount
+                                                        ),
+                                                        itemPrice,
+                                                        itemPrice - itemDiscount
+                                                         ),
+                                                        $campaign
+                                                           ));
+
+        System.out.println(     "Campaign: "            + $campaign.getName()
+                              + " Benefit Type"         + $campaign.getBenefitType().toString()
+                              + " Benefit Discount: "   + $campaign.getBenefitAmount()
+                              + " Item Discount:"       + itemDiscount
+                              + " Item Price: "         + itemPrice
+                              + " Final Price: "        + (itemPrice - itemDiscount));
+
+        System.out.println("SIZE: " + availableItemSize);
+        System.out.println("\n\n\n");
+
+	end
+
+
+
+////xTL indirim kampanyası
+//rule "Discount by amount"
+//	when
+//        $eligbleCampaigns : ArrayList()
+//        $campaign : Campaign(name == "xTL indirim kampanyası") from $eligbleCampaigns
+//		orderObject: Order()
+//
+//	then
+//        int availableItemSize = orderObject.getOrderItems().size();
+//        for(OrderItem orderItem : orderObject.getOrderItems()) {
+//            Double itemPrice = orderItem.getProduct().getPrice();
+//            Double itemDiscount = $campaign.getBenefit().getDiscount().getAmount() / availableItemSize;
+//
+//            orderObject.getSimulatedPaymentOptions().add(new OrderItem(orderItem.getProduct(),
+//                                                        new Payment(orderObject.getPaymentType().getType(),
+//                                                                new Discount(
+//                                                                    $campaign.getBenefit().getDiscount().getType(),
+//                                                                    itemDiscount
+//                                                                    ),
+//                                                                itemPrice,
+//                                                                itemPrice - itemDiscount
+//                                                               ),
+//                                                            $campaign
+//                                                               ));
+//                System.out.println(     "Campaign: "            + $campaign.getName()
+//                                      + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
+//                                      + " Item Discount:"       + itemDiscount
+//                                      + " Item Price: "         + itemPrice
+//                                      + " Final Price: "        + (itemPrice - itemDiscount));
+//        }
+//        System.out.println("\n\n\n");
+//
+//	end
+//
+//// Seçili üründe %x indirim kampanyası
+//rule "Discount by percentage on certain products"
+//    when
+//        $eligbleCampaigns : ArrayList()
+//        $campaign : Campaign(name == "Seçili üründe %x indirim kampanyası") from $eligbleCampaigns
+//        orderObject : Order()
+//        $orderItem : OrderItem() from orderObject.orderItems
+//        $hash : HashMap() from $campaign.parameters.get("products")
+//        $products: ArrayList() from collect (Product(name == $orderItem.product.name) from $hash.values())
+//        $product : Product() from $products
+//    then
+//
+//        Double itemPrice = $orderItem.getProduct().getPrice();
+//        Double itemDiscount = itemPrice * $campaign.getBenefit().getDiscount().getAmount()/100;
+//        orderObject.getSimulatedPaymentOptions().add(new OrderItem($orderItem.getProduct(),
+//                                                    new Payment(orderObject.getPaymentType().getType(),
+//                                                            new Discount(
+//                                                                $campaign.getBenefit().getDiscount().getType(),
+//                                                                itemDiscount
+//                                                                ),
+//                                                            itemPrice,
+//                                                            itemPrice - itemDiscount
+//                                                           ),
+//                                                        $campaign
+//                                                           ));
+//            System.out.println(     "Campaign: "            + $campaign.getName()
+//                                  + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
+//                                  + " Item Discount:"       + itemDiscount
+//                                  + " Item Price: "         + itemPrice
+//                                  + " Final Price: "        + (itemPrice - itemDiscount));
+//        System.out.println("\n\n\n");
+//    end
+//
+//// Seçili üründe xTL indirim kampanyası
+//rule "Discount by cash on certain products"
+//    when
+//        $eligbleCampaigns : ArrayList()
+//        $campaign : Campaign(name == "Seçili üründe xTL indirim kampanyası") from $eligbleCampaigns
+//        orderObject : Order()
+//        $orderItem : OrderItem() from orderObject.orderItems
+//        $hash : HashMap() from $campaign.parameters.get("products")
+//        $products: ArrayList() from collect (Product(name == $orderItem.product.name) from $hash.values())
+//        $product : Product() from $products
+//	then
+//        int availableItemSize = $products.size();
+//        Double itemPrice = $orderItem.getProduct().getPrice();
+//        Double itemDiscount = $campaign.getBenefit().getDiscount().getAmount() / availableItemSize;
+//
+//        orderObject.getSimulatedPaymentOptions().add(new OrderItem($orderItem.getProduct(),
+//                                                    new Payment(orderObject.getPaymentType().getType(),
+//                                                            new Discount(
+//                                                                $campaign.getBenefit().getDiscount().getType(),
+//                                                                itemDiscount
+//                                                                ),
+//                                                            itemPrice,
+//                                                            itemPrice - itemDiscount
+//                                                           ),
+//                                                        $campaign
+//                                                           ));
+//            System.out.println(     "Campaign: "            + $campaign.getName()
+//                                  + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
+//                                  + " Item Discount:"       + itemDiscount
+//                                  + " Item Price: "         + itemPrice
+//                                  + " Final Price: "        + (itemPrice - itemDiscount));
+//        System.out.println("\n\n\n");
+//    end
+//
+//
+//// Kredi kartı ödemelerinde %x indirim kampanyası
+//rule "Discount by percentage on credit card payment"
+//    when
+//        $eligbleCampaigns : ArrayList()
+//        $campaign : Campaign(name == "Kredi kartı ödemelerinde %x indirim kampanyası") from $eligbleCampaigns
+//        orderObject : Order(paymentType.type == "credit")
+//        // $campaign : Campaign(benefit.discount.type == "percent") from $eligbleCampaigns
+//    then
+//
+//        for(OrderItem orderItem : orderObject.getOrderItems()) {
+//
+//            Double itemPrice = orderItem.getProduct().getPrice();
+//            Double itemDiscount = itemPrice * $campaign.getBenefit().getDiscount().getAmount()/100;
+//
+//            orderObject.getSimulatedPaymentOptions().add(new OrderItem(orderItem.getProduct(),
+//                                                    new Payment(orderObject.getPaymentType().getType(),
+//                                                            new Discount(
+//                                                                $campaign.getBenefit().getDiscount().getType(),
+//                                                                itemDiscount
+//                                                                ),
+//                                                            itemPrice,
+//                                                            itemPrice - itemDiscount
+//                                                           ),
+//                                                    $campaign
+//                                                           ));
+//            System.out.println(     "Campaign: "            + $campaign.getName()
+//                                  + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
+//                                  + " Item Discount:"       + itemDiscount
+//                                  + " Item Price: "         + itemPrice
+//                                  + " Final Price: "        + (itemPrice - itemDiscount));
+//        }
+//
+//        System.out.println("\n\n\n");
+//    end
+//
+//// Nakit ödemelerde xTL indirim kampanyası
+//rule "Discount by cash on cash payment"
+//    when
+//        $eligbleCampaigns : ArrayList()
+//        $campaign : Campaign(name == "Nakit ödemelerde xTL indirim kampanyası") from $eligbleCampaigns
+//        orderObject : Order(paymentType.type == "cash")
+//        //$campaign : Campaign(benefit.discount.type == "cash") from $eligbleCampaigns
+//    then
+//        int availableItemSize = orderObject.getOrderItems().size();
+//        for(OrderItem orderItem : orderObject.getOrderItems()) {
+//
+//            Double itemPrice = orderItem.getProduct().getPrice();
+//            Double itemDiscount = $campaign.getBenefit().getDiscount().getAmount() / availableItemSize;
+//
+//            //sum += orderItem.getProduct().getPrice();
+//            orderObject.getSimulatedPaymentOptions().add(new OrderItem(orderItem.getProduct(),
+//                                                        new Payment(orderObject.getPaymentType().getType(),
+//                                                            new Discount(
+//                                                                $campaign.getBenefit().getDiscount().getType(),
+//                                                                itemDiscount
+//                                                                ),
+//                                                            itemPrice,
+//                                                            itemPrice - itemDiscount
+//                                                               ),
+//                                                        $campaign
+//                                                               ));
+//            System.out.println(     "Campaign: "            + $campaign.getName()
+//                                  + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
+//                                  + " Item Discount:"       + itemDiscount
+//                                  + " Item Price: "         + itemPrice
+//                                  + " Final Price: "        + (itemPrice - itemDiscount));
+//        }
+//        System.out.println("\n\n\n");
+//    end
+//
+//// Seçili ürün kategorilerinde %x indirim kampanyası
+//rule "Discount by percentage on certain product categories"
+//    when
+//        $eligbleCampaigns : ArrayList()
+//        $campaign : Campaign(name == "Seçili ürün kategorilerinde %x indirim kampanyası") from $eligbleCampaigns
+//        orderObject : Order()
+//        //$orderItems: ArrayList() from collect($item: OrderItem() from orderObject.orderItems)
+//        $hash : HashMap() from $campaign.parameters.get("categories")
+//        $categories: ArrayList() from collect (ProductCategory() from $hash.values())
+//        $category : ProductCategory() from $categories
+//        $orderItem : OrderItem(product.category == $category) from orderObject.orderItems
+//        // $campaign : Campaign(benefit.discount.type == "percent") from $eligbleCampaigns
+//    then
+//        Double itemPrice = $orderItem.getProduct().getPrice();
+//        Double itemDiscount = itemPrice * $campaign.getBenefit().getDiscount().getAmount()/100;
+//
+//        orderObject.getSimulatedPaymentOptions().add(new OrderItem($orderItem.getProduct(),
+//                                                    new Payment(orderObject.getPaymentType().getType(),
+//                                                        new Discount(
+//                                                                $campaign.getBenefit().getDiscount().getType(),
+//                                                                itemDiscount
+//                                                                ),
+//                                                        itemPrice,
+//                                                        itemPrice - itemDiscount
+//                                                         ),
+//                                                        $campaign
+//                                                           ));
+//
+//        System.out.println(     "Campaign: "            + $campaign.getName()
+//                              + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
+//                              + " Item Discount:"       + itemDiscount
+//                              + " Item Price: "         + itemPrice
+//                              + " Final Price: "        + (itemPrice - itemDiscount));
+//        System.out.println("\n\n\n");
+//    end
+//
+//// Seçili ürün kategorilerinde xTL indirim kampanyası
+//rule "Discount by cash on certain product categories"
+//    when
+//        $eligbleCampaigns : ArrayList()
+//        $campaign : Campaign(name == "Seçili ürün kategorilerinde xTL indirim kampanyası") from $eligbleCampaigns
+//        orderObject : Order()
+//        $hash : HashMap() from $campaign.parameters.get("categories")
+//        $categories: ArrayList() from collect (ProductCategory() from $hash.values())
+//        $category : ProductCategory() from $categories
+//        $ordeItems: ArrayList() from  collect (OrderItem($product: product.category.type == $category.type) from orderObject.orderItems)
+//        $orderItem: OrderItem() from $ordeItems
+//	then
+//        int availableItemSize = $ordeItems.size();
+//
+//        Double itemPrice = $orderItem.getProduct().getPrice();
+//        Double itemDiscount = $campaign.getBenefit().getDiscount().getAmount() / availableItemSize;
+//
+//        orderObject.getSimulatedPaymentOptions().add(new OrderItem($orderItem.getProduct(),
+//                                                    new Payment(orderObject.getPaymentType().getType(),
+//                                                        new Discount(
+//                                                                $campaign.getBenefit().getDiscount().getType(),
+//                                                                itemDiscount
+//                                                        ),
+//                                                        itemPrice,
+//                                                        itemPrice - itemDiscount
+//                                                         ),
+//                                                        $campaign
+//                                                           ));
+//
+//        System.out.println(     "Campaign: "            + $campaign.getName()
+//                              + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
+//                              + " Item Discount:"       + itemDiscount
+//                              + " Item Price: "         + itemPrice
+//                              + " Final Price: "        + (itemPrice - itemDiscount));
+//        System.out.println("\n\n\n");
+//    end
+//
+//
+//// TODO: Kontrol et
+//// Seçili ürünlerde x puan indirim kampanyası
+//rule "Discount by point on certain products"
+//    when
+//        $eligbleCampaigns : ArrayList()
+//        $campaign : Campaign(name == "Seçili ürünlerde x puan indirim kampanyası") from $eligbleCampaigns
+//        orderObject : Order()
+//        $eligbleProducts : ArrayList()
+//        $orderItem : OrderItem() from orderObject.orderItems
+//        $hash : HashMap() from $campaign.parameters.get("products")
+//        $products: ArrayList() from collect (Product(name == $orderItem.product.name) from $hash.values())
+//        $product : Product() from $products
+//	then
+//        int availableItemSize = $products.size();
+//        Double itemPrice = $orderItem.getProduct().getPrice();
+//        Double itemDiscount = $campaign.getBenefit().getDiscount().getAmount() / availableItemSize;
+//
+//        orderObject.getSimulatedPaymentOptions().add(new OrderItem($orderItem.getProduct(),
+//                                                    new Payment(orderObject.getPaymentType().getType(),
+//                                                            new Discount(
+//                                                                $campaign.getBenefit().getDiscount().getType(),
+//                                                                itemDiscount
+//                                                                ),
+//                                                            itemPrice,
+//                                                            // TODO: puan çevirim
+//                                                            itemPrice
+//                                                           ),
+//                                                        $campaign
+//                                                           ));
+//            System.out.println(     "Campaign: "            + $campaign.getName()
+//                                  + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
+//                                  + " Item Discount:"       + itemDiscount
+//                                  + " Item Price: "         + itemPrice
+//                                  + " Final Price: "        + itemPrice
+//                                  + " Item Point: "         + itemDiscount);
+//        System.out.println("\n\n\n");
+//    end
+//
+//// Seçili ürün kategorilerinde x puan indirim kampanyası
+//rule "Discount by point on certain product categories"
+//    when
+//        $eligbleCampaigns : ArrayList()
+//        $campaign : Campaign(name == "Seçili ürün kategorilerinde x puan indirim kampanyası") from $eligbleCampaigns
+//        orderObject : Order()
+//        $hash : HashMap() from $campaign.parameters.get("categories")
+//        $categories: ArrayList() from collect (ProductCategory() from $hash.values())
+//        $category : ProductCategory() from $categories
+//        $ordeItems: ArrayList() from  collect (OrderItem($product: product.category.type == $category.type) from orderObject.orderItems)
+//        $orderItem: OrderItem() from $ordeItems
+//	then
+//        int availableItemSize = $ordeItems.size();
+//
+//        Double itemPrice = $orderItem.getProduct().getPrice();
+//        // TODO: puan çevirim
+//        Double itemDiscount = $campaign.getBenefit().getDiscount().getAmount() / availableItemSize;
+//
+//        orderObject.getSimulatedPaymentOptions().add(new OrderItem($orderItem.getProduct(),
+//                                                    new Payment(orderObject.getPaymentType().getType(),
+//                                                            new Discount(
+//                                                                $campaign.getBenefit().getDiscount().getType(),
+//                                                                itemDiscount
+//                                                                ),
+//                                                            itemPrice,
+//                                                            // TODO: puan çevirim
+//                                                            itemPrice
+//                                                           ),
+//                                                        $campaign
+//                                                           ));
+//            System.out.println(     "Campaign: "            + $campaign.getName()
+//                                  + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
+//                                  + " Item Discount:"       + itemDiscount
+//                                  + " Item Price: "         + itemPrice
+//                                  + " Final Price: "        + itemPrice
+//                                  + " Item Point: "         + itemDiscount);
+//        System.out.println("\n\n\n");
+//    end
+//
+//// ---------------- Baremli ---------------------
+//
+//// xTL üzeri alışverişe özel ytl puan kampanyası
+//rule "Discount by point over limit"
+//	when
+//        $eligbleCampaigns : ArrayList()
+//        $campaign : Campaign(name == "xTL üzeri alışverişe özel ytl puan kampanyası") from $eligbleCampaigns
+//		orderObject: Order(paymentType.totalAmount > $campaign.limit)
+//	then
+//        int availableItemSize = orderObject.getOrderItems().size();
+//        for(OrderItem orderItem : orderObject.getOrderItems()) {
+//            Double itemPrice = orderItem.getProduct().getPrice();
+//            Double itemDiscount = $campaign.getBenefit().getDiscount().getAmount() / availableItemSize;
+//            orderObject.getSimulatedPaymentOptions().add(new OrderItem(orderItem.getProduct(),
+//                                                        new Payment(orderObject.getPaymentType().getType(),
+//                                                                new Discount(
+//                                                                    $campaign.getBenefit().getDiscount().getType(),
+//                                                                    itemDiscount
+//                                                                    ),
+//                                                                itemPrice,
+//                                                                // TODO: puan çevirim
+//                                                                itemPrice
+//                                                               ),
+//                                                            $campaign
+//                                                               ));
+//                System.out.println(     "Campaign: "            + $campaign.getName()
+//                                      + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
+//                                      + " Item Discount:"       + itemDiscount
+//                                      + " Item Price: "         + itemPrice
+//                                      + " Final Price: "        + itemPrice
+//                                      + " Item Point: "         + itemDiscount);
+//        }
+//        System.out.println("\n\n\n");
+//
+//	end
+//
+////xTL üzeri alışverişe özel ytl indirim kampanyası
+//rule "Discount by cash over limit"
+//	when
+//        $eligbleCampaigns : ArrayList()
+//        $campaign : Campaign(name == "xTL üzeri alışverişe özel ytl indirim kampanyası") from $eligbleCampaigns
+//		orderObject: Order(paymentType.totalAmount > $campaign.limit)
+//	then
+//        int availableItemSize = orderObject.getOrderItems().size();
+//        for(OrderItem orderItem : orderObject.getOrderItems()) {
+//            Double itemPrice = orderItem.getProduct().getPrice();
+//            Double itemDiscount = $campaign.getBenefit().getDiscount().getAmount() / availableItemSize;
+//
+//            orderObject.getSimulatedPaymentOptions().add(new OrderItem(orderItem.getProduct(),
+//                                                        new Payment(orderObject.getPaymentType().getType(),
+//                                                                new Discount(
+//                                                                    $campaign.getBenefit().getDiscount().getType(),
+//                                                                    itemDiscount
+//                                                                    ),
+//                                                                itemPrice,
+//                                                                itemPrice - itemDiscount
+//                                                               ),
+//                                                            $campaign
+//                                                               ));
+//                System.out.println(     "Campaign: "            + $campaign.getName()
+//                                      + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
+//                                      + " Item Discount:"       + itemDiscount
+//                                      + " Item Price: "         + itemPrice
+//                                      + " Final Price: "        + (itemPrice - itemDiscount));
+//        }
+//        System.out.println("\n\n\n");
+//
+//	end
+//
+//
+//
+////xTL üzeri alışverişe özel %y puan kampanyası
+//rule "Discount by percent point over limit"
+//	when
+//        $eligbleCampaigns : ArrayList()
+//        $campaign : Campaign(name == "xTL üzeri alışverişe özel %y puan kampanyası") from $eligbleCampaigns
+//		orderObject: Order(paymentType.totalAmount > $campaign.limit)
+//	then
+//
+//        for(OrderItem orderItem : orderObject.getOrderItems()) {
+//            Double itemPrice = orderItem.getProduct().getPrice();
+//            Double itemDiscount = itemPrice * $campaign.getBenefit().getDiscount().getAmount()/100;
+//
+//            orderObject.getSimulatedPaymentOptions().add(new OrderItem(orderItem.getProduct(),
+//                                                        new Payment(orderObject.getPaymentType().getType(),
+//                                                                new Discount(
+//                                                                    $campaign.getBenefit().getDiscount().getType(),
+//                                                                    itemDiscount
+//                                                                    ),
+//                                                                itemPrice,
+//                                                                // TODO: puan çevirim
+//                                                                itemPrice
+//                                                               ),
+//                                                            $campaign
+//                                                               ));
+//                System.out.println(     "Campaign: "            + $campaign.getName()
+//                                      + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
+//                                      + " Item Discount:"       + itemDiscount
+//                                      + " Item Price: "         + itemPrice
+//                                      + " Final Price: "        + itemPrice
+//                                      + " Item Point: "         + itemDiscount);
+//        }
+//        System.out.println("\n\n\n");
+//
+//	end
+//
+////xTL üzeri kredi kartı ödemelerine özel yTL indirim kampanyası
+//rule "Discount by cash over limit and credit"
+//	when
+//        $eligbleCampaigns : ArrayList()
+//        $campaign : Campaign(name == "xTL üzeri kredi kartı ödemelerine özel yTL indirim kampanyası") from $eligbleCampaigns
+//		orderObject: Order(paymentType.totalAmount > $campaign.limit, paymentType.type == "credit")
+//	then
+//        int availableItemSize = orderObject.getOrderItems().size();
+//        for(OrderItem orderItem : orderObject.getOrderItems()) {
+//            Double itemPrice = orderItem.getProduct().getPrice();
+//            Double itemDiscount = $campaign.getBenefit().getDiscount().getAmount() / availableItemSize;
+//
+//            orderObject.getSimulatedPaymentOptions().add(new OrderItem(orderItem.getProduct(),
+//                                                        new Payment(orderObject.getPaymentType().getType(),
+//                                                                new Discount(
+//                                                                    $campaign.getBenefit().getDiscount().getType(),
+//                                                                    itemDiscount
+//                                                                    ),
+//                                                                itemPrice,
+//                                                                itemPrice - itemDiscount
+//                                                               ),
+//                                                            $campaign
+//                                                               ));
+//                System.out.println(     "Campaign: "            + $campaign.getName()
+//                                      + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
+//                                      + " Item Discount:"       + itemDiscount
+//                                      + " Item Price: "         + itemPrice
+//                                      + " Final Price: "        + (itemPrice - itemDiscount));
+//        }
+//        System.out.println("\n\n\n");
+//
+//	end
+//
+////xTL nakit ödemelere özel %y indirim kampanyası
+//rule "Discount by percent over limit and credit"
+//	when
+//        $eligbleCampaigns : ArrayList()
+//        $campaign : Campaign(name == "xTL nakit ödemelere özel %y indirim kampanyası") from $eligbleCampaigns
+//		orderObject: Order(paymentType.totalAmount > $campaign.limit, paymentType.type == "cash")
+//	then
+//	    for(OrderItem orderItem : orderObject.getOrderItems()) {
+//	        Double itemPrice = orderItem.getProduct().getPrice();
+//            Double itemDiscount = itemPrice * $campaign.getBenefit().getDiscount().getAmount()/100;
+//
+//            orderObject.getSimulatedPaymentOptions().add(new OrderItem(orderItem.getProduct(),
+//                                                        new Payment(orderObject.getPaymentType().getType(),
+//                                                                new Discount(
+//                                                                    $campaign.getBenefit().getDiscount().getType(),
+//                                                                    itemDiscount
+//                                                                    ),
+//                                                                itemPrice,
+//                                                                itemPrice - itemDiscount
+//                                                               ),
+//                                                            $campaign
+//                                                               ));
+//                System.out.println(     "Campaign: "            + $campaign.getName()
+//                                      + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
+//                                      + " Item Discount:"       + itemDiscount
+//                                      + " Item Price: "         + itemPrice
+//                                      + " Final Price: "        + (itemPrice - itemDiscount));
+//	    }
+//        System.out.println("\n\n\n");
+//
+//	end
+//// TODO: Product'ın biirden fazla grubu olabilir mi? Grup = Kategori. Grup attribute olarak tanımlanacak
+//// TODO: Buraya bak, Toplam tutar mı yoksa grup tutarı mı?
+////Seçili ürün gruplarında xTL üzeri alışverişe özel ytl puan kampanyası
+//rule "Discount by point over limit and credit for certain groups"
+//	when
+//        $eligbleCampaigns : ArrayList()
+//        $campaign : Campaign(name == "Seçili ürün gruplarında xTL üzeri alışverişe özel ytl puan kampanyası") from $eligbleCampaigns
+//        $hash : HashMap() from $campaign.parameters.get("categories")
+//        $categories: ArrayList() from collect (ProductCategory() from $hash.values())
+//        $category : ProductCategory() from $categories
+//		orderObject: Order(paymentType.totalAmount > $campaign.limit)
+//        $ordeItems: ArrayList() from  collect (OrderItem($product: product.category.type == $category.type)from orderObject.orderItems)
+//        Number(doubleValue > $campaign.limit) from accumulate(
+//                          OrderItem($price : product.getPrice()) from $orderItems,
+//                          sum($price)
+//                       )
+//        $orderItem: OrderItem() from $ordeItems
+//	then
+//        int availableItemSize = $ordeItems.size();
+//        Double itemPrice = $orderItem.getProduct().getPrice();
+//        Double itemDiscount = $campaign.getBenefit().getDiscount().getAmount() / availableItemSize;
+//        orderObject.getSimulatedPaymentOptions().add(new OrderItem($orderItem.getProduct(),
+//                                                    new Payment(orderObject.getPaymentType().getType(),
+//                                                            new Discount(
+//                                                                $campaign.getBenefit().getDiscount().getType(),
+//                                                                itemDiscount
+//                                                                ),
+//                                                            itemPrice,
+//                                                            // TODO: puan çevirim
+//                                                            itemPrice
+//                                                           ),
+//                                                        $campaign
+//                                                           ));
+//            System.out.println(     "Campaign: "            + $campaign.getName()
+//                                  + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
+//                                  + " Item Discount:"       + itemDiscount
+//                                  + " Item Price: "         + itemPrice
+//                                  + " Final Price: "        + itemPrice
+//                                  + " Item Point: "         + itemDiscount);
+//
+//        System.out.println("\n\n\n");
+//
+//
+//
+//	end
+//
+//
+//function boolean checkOrderLimit(Order order, double limit){
+//    // access user's double[] and calculate the sum, do the test
+//    double sum = 0;
+//    for (Object orderItem : order.getOrderItems()){
+//        sum += ((OrderItem)orderItem).getProduct().getPrice();
+//    }
+//    System.out.println("SUM: " + sum);
+//    return sum > limit;
+//}
+//
+////Seçili ürün gruplarında xTL üzeri alışverişe özel ytl indirim kampanyası
+//rule "Discount by cash over limit for certain groups"
+//	when
+//        $eligbleCampaigns : ArrayList()
+//        $campaign : Campaign(name == "Seçili ürün gruplarında xTL üzeri alışverişe özel ytl indirim kampanyası") from $eligbleCampaigns
+//        $hash : HashMap() from $campaign.parameters.get("categories")
+//        $categories: ArrayList() from collect (ProductCategory() from $hash.values())
+//        $category : ProductCategory() from $categories
+//		orderObject: Order()
+//        $orderItems: ArrayList() from  collect (OrderItem($product: product.category.type == $category.type)from orderObject.orderItems)
+//
+//        Number(doubleValue > $campaign.limit) from accumulate(
+//                  OrderItem($price : product.getPrice()) from $orderItems,
+//                  sum($price)
+//               )
+//
+//
+//      $orderItem: OrderItem() from $orderItems
+////        eval(checkOrderLimit(orderObject, $campaign.getLimit()))
+//
+//
+//	then
+//        int availableItemSize = $orderItems.size();
+//
+//        Double itemPrice = $orderItem.getProduct().getPrice();
+//        Double itemDiscount = $campaign.getBenefit().getDiscount().getAmount() / availableItemSize;
+//
+//        orderObject.getSimulatedPaymentOptions().add(new OrderItem($orderItem.getProduct(),
+//                                                    new Payment(orderObject.getPaymentType().getType(),
+//                                                        new Discount(
+//                                                                $campaign.getBenefit().getDiscount().getType(),
+//                                                                itemDiscount
+//                                                        ),
+//                                                        itemPrice,
+//                                                        itemPrice - itemDiscount
+//                                                         ),
+//                                                        $campaign
+//                                                           ));
+//
+//        System.out.println(     "Campaign: "            + $campaign.getName()
+//                              + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
+//                              + " Item Discount:"       + itemDiscount
+//                              + " Item Price: "         + itemPrice
+//                              + " Final Price: "        + (itemPrice - itemDiscount));
+//
+//        System.out.println("SIZE: " + availableItemSize);
+//        System.out.println("\n\n\n");
+//
+//
+//	end
+//
+////Seçili ürün gruplarında xTL üzeri alışverişe özel %y indirim kampanyası
+//rule "Discount by percent over limit  for certain groups"
+//	when
+//        $eligbleCampaigns : ArrayList()
+//        $campaign : Campaign(name == "Seçili ürün gruplarında xTL üzeri alışverişe özel %y indirim kampanyası") from $eligbleCampaigns
+//        $hash : HashMap() from $campaign.parameters.get("categories")
+//        $categories: ArrayList() from collect (ProductCategory() from $hash.values())
+//        $category : ProductCategory() from $categories
+//		orderObject: Order(paymentType.totalAmount > $campaign.limit)
+//        $ordeItems: ArrayList() from  collect (OrderItem($product: product.category.type == $category.type)from orderObject.orderItems)
+//        Number(doubleValue > $campaign.limit) from accumulate(
+//                          OrderItem($price : product.getPrice()) from $orderItems,
+//                          sum($price)
+//                       )
+//        $orderItem: OrderItem() from $ordeItems
+//	then
+//        Double itemPrice = $orderItem.getProduct().getPrice();
+//        Double itemDiscount = itemPrice * $campaign.getBenefit().getDiscount().getAmount()/100;
+//
+//        orderObject.getSimulatedPaymentOptions().add(new OrderItem($orderItem.getProduct(),
+//                                                    new Payment(orderObject.getPaymentType().getType(),
+//                                                            new Discount(
+//                                                                $campaign.getBenefit().getDiscount().getType(),
+//                                                                itemDiscount
+//                                                                ),
+//                                                            itemPrice,
+//                                                            itemPrice - itemDiscount
+//                                                           ),
+//                                                        $campaign
+//                                                           ));
+//            System.out.println(     "Campaign: "            + $campaign.getName()
+//                                  + " Benefit Discount: "   + $campaign.getBenefit().getDiscount()
+//                                  + " Item Discount:"       + itemDiscount
+//                                  + " Item Price: "         + itemPrice
+//                                  + " Final Price: "        + (itemPrice - itemDiscount));
+//        System.out.println("\n\n\n");
+//
+//	end

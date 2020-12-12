@@ -3,7 +3,7 @@ package com.javainuse.model;
 public class OrderItem {
     private Product product;
     private Payment payment;
-    private Campaign campaign;
+    private CampaignBody campaign;
 
     public OrderItem() {
     }
@@ -13,7 +13,7 @@ public class OrderItem {
         this.payment = payment;
     }
 
-    public OrderItem(Product product, Payment payment, Campaign campaign) {
+    public OrderItem(Product product, Payment payment, CampaignBody campaign) {
         this.product = product;
         this.payment = payment;
         this.campaign = campaign;
@@ -28,11 +28,11 @@ public class OrderItem {
                 '}';
     }
 
-    public Campaign getCampaign() {
+    public CampaignBody getCampaign() {
         return campaign;
     }
 
-    public void setCampaign(Campaign campaign) {
+    public void setCampaign(CampaignBody campaign) {
         this.campaign = campaign;
     }
 
