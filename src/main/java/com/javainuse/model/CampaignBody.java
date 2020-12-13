@@ -9,15 +9,18 @@ public class CampaignBody implements Serializable {
     private Long id;
     @NotNull
     private String name;
+    // region: Benefit
     @NotNull
-    private BenefitType benefitType;
+    private
+    BenefitType benefitType;
     @NotNull
     private Double benefitAmount;
+    // region end
     @NotNull
     private PaymentMethod paymentMethod;
     @NotNull
     private CampaignFilter campaignFilter;
-    private Double limit = 0.0;
+    private Double limit = -1.0;
     private HashMap<String, List<Object>> parameters = new HashMap<String, List<Object>>();
 
     public CampaignBody() {

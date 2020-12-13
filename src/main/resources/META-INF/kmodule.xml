@@ -5,5 +5,13 @@
     <kbase name="rules" packages="rules">
     	<ksession name="rulesSession" />
     </kbase>
-
+    <kbase name="rules2" packages="rules">
+        <ksession name="rulesSession2" />
+    </kbase>
+    <kbase name="rules3" packages="rules">
+        <ksession name="rulesSession3" />
+    </kbase>
+    <kbase name="rules4" packages="rules">
+        <ksession name="rulesSession4" />
+    </kbase>
 </kmodule>

@@ -29,6 +29,7 @@ public class JewelleryShopController {
 		System.out.println("-----------------------------------------------------");
 		long end = System.currentTimeMillis();
 		System.out.println(end - start);
+		System.out.println("Thread: " + Thread.currentThread().getId());
 		return order;
 	}
 

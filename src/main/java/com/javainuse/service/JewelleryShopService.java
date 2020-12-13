@@ -30,10 +30,18 @@ public class JewelleryShopService {
 
 	public Order getProductDiscount(Order order) {
 		KieSession kieSession = kieContainer.newKieSession("rulesSession");
-		kieSession.insert(order);
-		kieSession.insert(eligibleCampaigns);
-		kieSession.fireAllRules();
-		kieSession.dispose();
+		KieSession kieSession2 = kieContainer.newKieSession("rulesSession2");
+		KieSession kieSession3 = kieContainer.newKieSession("rulesSession3");
+		KieSession kieSession4 = kieContainer.newKieSession("rulesSession4");
+		ArrayList<KieSession> sessions = new ArrayList<>();
+		sessions.add(kieSession);
+		sessions.add(kieSession2);
+		sessions.add(kieSession3);
+		sessions.add(kieSession4);
+
+//		sessions.forEach(s -> {s.insert(order); s.insert(eligibleCampaigns); s.fireAllRules();});
+		sessions.parallelStream().forEach(s -> {s.insert(order); s.insert(eligibleCampaigns); s.fireAllRules();});
+		sessions.parallelStream().forEach(KieSession::dispose);
 		return order;
 	}
 
