@@ -49,6 +49,7 @@ public class ProductAttribute {
                 '}';
     }
 
+    // TODO: Konuşuruz
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

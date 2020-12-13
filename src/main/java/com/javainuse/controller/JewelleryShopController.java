@@ -34,8 +34,7 @@ public class JewelleryShopController {
 
 	@RequestMapping(value = "/createCampaign", method = RequestMethod.POST, produces = "application/json")
 	public CampaignBody createCampaign(@Valid @RequestBody CampaignBody campaignBody){
-		CampaignBody campaign = jewelleryShopService.createCampaign(campaignBody);
-		return campaign;
+		return jewelleryShopService.createCampaign(campaignBody);
 	}
 
 }

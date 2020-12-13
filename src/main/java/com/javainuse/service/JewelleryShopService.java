@@ -1,5 +1,6 @@
 package com.javainuse.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.javainuse.model.*;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class JewelleryShopService {
@@ -100,6 +102,9 @@ public class JewelleryShopService {
 
 	public CampaignBody createCampaign(CampaignBody campaignBody){
 		campaignBody.setId(counter);
+		campaignBody.getParameters().put("products", campaignBody.getParameters().get("products").stream().map(o -> new ObjectMapper().convertValue(o, Product.class)).collect(Collectors.toList()));
+		campaignBody.getParameters().put("categories", campaignBody.getParameters().get("categories").stream().map(o -> new ObjectMapper().convertValue(o, ProductCategory.class)).collect(Collectors.toList()));
+		campaignBody.getParameters().put("attributes", campaignBody.getParameters().get("attributes").stream().map(o -> new ObjectMapper().convertValue(o, ProductAttribute.class)).collect(Collectors.toList()));
 		eligibleCampaigns.add(campaignBody);
 		counter++;
 		return campaignBody;

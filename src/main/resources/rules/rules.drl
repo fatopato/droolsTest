@@ -10,7 +10,6 @@ import com.javainuse.model.Discount;
 import com.javainuse.model.ProductCategory;
 import com.javainuse.model.Campaign;
 import com.javainuse.model.OrderItem;
-import com.javainuse.model.ProductGroup;
 import com.javainuse.model.ProductAttribute;
 import com.javainuse.model.CampaignBody;
 import com.javainuse.model.CampaignFilter;
@@ -74,9 +73,10 @@ rule "Rule for campaigns with category filter"
 	when
         $eligbleCampaigns : ArrayList()
         $campaign : CampaignBody(campaignFilter == CampaignFilter.CATEGORIES) from $eligbleCampaigns
-        $hash : HashMap() from $campaign.parameters.get("categories")
-        $categories: ArrayList() from collect (ProductCategory() from $hash.values())
-        $category : ProductCategory() from $categories
+//        $hash : HashMap() from $campaign.parameters.get("categories")
+//        $categories: ArrayList() from collect (ProductCategory() from $hash.values())
+//        $product: Product() from $campaign.getParameters().get("products")
+        $category : ProductCategory() from $campaign.getParameters().get("categories")
 		orderObject: Order(payment.totalAmount > $campaign.limit, (payment.method == $campaign.getPaymentMethod() || $campaign.getPaymentMethod() == PaymentMethod.ALL))
         $orderItems: ArrayList() from  collect (OrderItem($product: product.category.id == $category.id)from orderObject.orderItems)
 
@@ -125,9 +125,9 @@ rule "Rule for campaigns with product filter"
 	when
         $eligbleCampaigns : ArrayList()
         $campaign : CampaignBody(campaignFilter == CampaignFilter.PRODUCTS) from $eligbleCampaigns
-        $hash : HashMap() from $campaign.parameters.get("products")
-        $products: ArrayList() from collect (Product() from $hash.values())
-        $product : Product() from $products
+//        $hash : HashMap() from $campaign.parameters.get("products")
+        $product: Product() from $campaign.getParameters().get("products")
+//        $product : Product() from $products
 		orderObject: Order(payment.totalAmount > $campaign.limit, (payment.method == $campaign.getPaymentMethod() || $campaign.getPaymentMethod() == PaymentMethod.ALL))
         $orderItems: ArrayList() from  collect (OrderItem(product.id == $product.getId())from orderObject.orderItems)
 
@@ -165,7 +165,7 @@ rule "Rule for campaigns with product filter"
                               + " Item Price: "         + itemPrice
                               + " Final Price: "        + (itemPrice - itemDiscount));
 
-        System.out.println("SIZE: " + $hash);
+        System.out.println("SIZE: " + $campaign.getParameters().get("products"));
         System.out.println("\n\n\n");
 
 	end
@@ -177,9 +177,10 @@ rule "Rule for campaigns with attribute filter"
 	when
         $eligbleCampaigns : ArrayList()
         $campaign : CampaignBody(campaignFilter == CampaignFilter.ATTRIBUTES) from $eligbleCampaigns
-        $hash : HashMap() from $campaign.parameters.get("attributes")
-        $attributes: ArrayList() from collect (ProductAttribute() from $hash.values())
-        $attribute : ProductAttribute() from $attributes
+//        $hash : HashMap() from $campaign.parameters.get("attributes")
+//        $attributes: ArrayList() from collect (ProductAttribute() from $hash.values())
+//        $category : ProductCategory() from $campaign.getParameters().get("categories")
+        $attribute : ProductAttribute() from $campaign.getParameters().get("attributes")
 		orderObject: Order(payment.totalAmount > $campaign.limit, (payment.method == $campaign.getPaymentMethod() || $campaign.getPaymentMethod() == PaymentMethod.ALL))
         $orderItems: ArrayList() from  collect (OrderItem($product: product.attributeList contains $attribute)from orderObject.orderItems)
         Number(doubleValue > $campaign.limit) from accumulate(

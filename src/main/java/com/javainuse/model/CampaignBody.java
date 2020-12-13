@@ -3,6 +3,7 @@ package com.javainuse.model;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 
 public class CampaignBody implements Serializable {
     private Long id;
@@ -16,8 +17,8 @@ public class CampaignBody implements Serializable {
     private PaymentMethod paymentMethod;
     @NotNull
     private CampaignFilter campaignFilter;
-    private Double limit;
-    private HashMap<String, Object> parameters = new HashMap<>();
+    private Double limit = 0.0;
+    private HashMap<String, List<Object>> parameters = new HashMap<String, List<Object>>();
 
     public CampaignBody() {
     }
@@ -31,7 +32,7 @@ public class CampaignBody implements Serializable {
         this.limit = limit;
     }
 
-    public CampaignBody(Long id, String name, Double benefitAmount, PaymentMethod paymentMethod, CampaignFilter campaignFilter, Double limit, HashMap<String, Object> parameters) {
+    public CampaignBody(Long id, String name, Double benefitAmount, PaymentMethod paymentMethod, CampaignFilter campaignFilter, Double limit, HashMap<String, List<Object>> parameters) {
         this.id = id;
         this.name = name;
         this.benefitAmount = benefitAmount;
@@ -41,7 +42,7 @@ public class CampaignBody implements Serializable {
         this.parameters = parameters;
     }
 
-    public CampaignBody(Long id, String name, BenefitType benefitType, Double benefitAmount, PaymentMethod paymentMethod, CampaignFilter campaignFilter, Double limit, HashMap<String, Object> parameters) {
+    public CampaignBody(Long id, String name, BenefitType benefitType, Double benefitAmount, PaymentMethod paymentMethod, CampaignFilter campaignFilter, Double limit, HashMap<String, List<Object>> parameters) {
         this.id = id;
         this.name = name;
         this.benefitType = benefitType;
@@ -108,11 +109,11 @@ public class CampaignBody implements Serializable {
         this.limit = limit;
     }
 
-    public HashMap<String, Object> getParameters() {
+    public HashMap<String, List<Object>> getParameters() {
         return parameters;
     }
 
-    public void setParameters(HashMap<String, Object> parameters) {
+    public void setParameters(HashMap<String, List<Object>> parameters) {
         this.parameters = parameters;
     }
 
